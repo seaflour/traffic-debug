@@ -31,8 +31,8 @@ int main(int argc, char **argv) {
 	pcap_if_t *alldevs;
 
 	// Check if sufficient arguments were supplied
-	if (argc != 4) {
-		printf("\nUsage %s [device] [protocol] [number-of-packets]\n", argv[0]);
+	if (argc != 3) {
+		printf("\nUsage %s [device] [protocol]\n", argv[0]);
 		return 0;
 	}
 
@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Error in pcap_findalldevs: %s\n", errbuf);
 		exit(1);
 	}
-	printf("\ndevice [%s] capturing [%d] packets\n\n Starting capture...\n",argv[1], (atoi)(argv[3]));
+	printf("\nStarting capture on device [%s]...\n",argv[1]);
 
 	// fetch the network address and network mask
 	pcap_lookupnet(argv[1], &pNet, &pMask, errbuf);
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
 
 	// for every packet received, call the callback function
 	// for now, maximum limit on packets is specified by the user
-	pcap_loop(descr, atoi(argv[3]), callback, NULL);
+	pcap_loop(descr, -1, callback, NULL);
 	
 	printf("\nFinished.\n");
 	return 0;
