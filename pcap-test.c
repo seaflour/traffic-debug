@@ -16,10 +16,11 @@
 #include <netinet/tcp.h>
 #include <netinet/ip.h>
 #include <string.h>
+#include <sys/time.h>
 
 void callback(u_char *useless, const struct pcap_pkthdr *pkthdr, const u_char *packet) {
 	static int count = 1;
-	printf("\nPacket number [%d], length: %d\n", count++, pkthdr->len);
+	printf("Packet number [%d]\ttime: %ld %ldl\n", count++, (long int)(pkthdr->ts.tv_sec), (long int)(pkthdr->ts.tv_usec));
 }
 
 int main(int argc, char **argv) {
