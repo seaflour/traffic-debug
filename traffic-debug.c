@@ -18,6 +18,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include "detect-stream.h"
 
 void callback(u_char *useless, const struct pcap_pkthdr *pkthdr, const u_char *packet) {
 	static int count = 1;
@@ -61,7 +62,7 @@ int main(int argc, char **argv) {
 	// The last option must be the device name
 	device = argv[argc-1];
 
-	printf("\nStarting capture on device [%s]...\n",argv[1]);
+	printf("\nStarting TCP capture on device [%s]...\n",argv[1]);
 
 	// fetch the network address and network mask
 	pcap_lookupnet(device, &pNet, &pMask, errbuf);
