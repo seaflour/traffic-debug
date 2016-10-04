@@ -3,13 +3,13 @@
 CC = gcc
 CFLAGS = -Wall -Werror
 
-all: pcap-test
+all: traffic-debug
 
-pcap-test: pcap-test.o
-	$(CC) $(CFLAGS) -o pcap-test pcap-test.o -lpcap
+traffic-debug: traffic-debug.o
+	$(CC) $(CFLAGS) -o traffic-debug traffic-debug.o -lpcap
 
-pcap-test.o: pcap-test.c
-	$(CC) $(CFLAGS) -c pcap-test.c
+traffic-debug.o: traffic-debug.c
+	$(CC) $(CFLAGS) -c traffic-debug.c
 
 clean:
-	rm -f ~* *.o pcap-test
+	rm -f ~* *.o traffic-debug
