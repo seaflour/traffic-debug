@@ -1,10 +1,3 @@
-/*
- * trd217
- * from http://www.thegeekstuff.com/2012/10/packet-sniffing-using-libpcap/
- * test program for captureing tcp packets
- *
- */
-
 #include <pcap.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,14 +18,20 @@ void callback(u_char *useless, const struct pcap_pkthdr *pkthdr, const u_char *p
 	printf("Packet number [%d]\ttime: %ld %ldl\n", count++, (long int)(pkthdr->ts.tv_sec), (long int)(pkthdr->ts.tv_usec));
 }
 
-void usage(int code) {
-	fprintf(stderr, "traffic-debug - detect interruptions in video streams\n");
-	fprintf(stderr, "Usage: traffic-debug [OPTIONS] [device]\n");
+void usage(char *name, int code) {
+	fprintf(stderr, "%s - detect interruptions in video streams\n", name);
+	fprintf(stderr, "Usage: %s [OPTIONS] [device]\n", name);
 	fprintf(stderr, "\nOPTIONS\n\t-h\tprint this text\n");
 	exit(code);
 }
 
 int main(int argc, char **argv) {
+	char *ip1 = "68.65.124.13";
+	char *ip2 = "31.13.80.36";
+
+	fprintf(stderr, "lookup %s: %d\n", ip1, dns_lookup_youtube(ip1));
+	fprintf(stderr, "lookup %s: %d\n", ip2, dns_lookup_youtube(ip2));
+
 	int opt;
 
 	char errbuf[PCAP_ERRBUF_SIZE];
@@ -44,7 +43,7 @@ int main(int argc, char **argv) {
 
 	// Check if sufficient arguments were supplied
 	if (argc < 2) {
-		usage(1);
+		usage(argv[0],1);
 	}
 
 
@@ -52,10 +51,10 @@ int main(int argc, char **argv) {
 	while ((opt = getopt(argc, argv, "h")) != -1) {
 		switch (opt) {
 			case 'h':
-				usage(0);
+				usage(argv[0],0);
 				break; 
 			default: 
-				usage(1);
+				usage(argv[0],1);
 		}
 	}
 	
