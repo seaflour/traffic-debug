@@ -7,7 +7,8 @@ int dns_lookup_youtube(char *addr) {
 
 	/* create command string */
 	sprintf(command, "host %s | cut -d' ' -f5", addr);
-	/* execute command and open for reading */
+
+	/* execute command and open fp for reading result */
 	fp = popen(command,"r");
 
 	if (fp == NULL) {
