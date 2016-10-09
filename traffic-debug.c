@@ -1,4 +1,3 @@
-
 #include <pcap.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -34,12 +33,15 @@ struct sniff_ip {
 /* not sure that we need these two macros ... */
 #define IP_HL(ip)	(((ip)->ip_vhl) & 0x0f)
 #define IP_V(ip)	(((ip)->ip_vhl) >> 4)
+
 #define SIZE_ETHERNET 14
 #define SIZE_WLAN 30
+
 
 struct sniff_ip *ip; /* The IP header */
 pcap_t *handle;
 
+/* run a dns lookup on the source of the packet until one resolves to cache.google.com */
 void callback(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *packet) {
 	static int count = 1;
 	int hdr_size;
@@ -53,21 +55,23 @@ void callback(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *packe
 	} else if (strcmp((char *)arg, "w") == 0) {
 		hdr_size = SIZE_WLAN;
 	} else {
-		/* unsupported device */
-		exit(1);
+		/* not ethernet or WLAN */
+		fprintf(stderr, "Device not supported\n");
+		exit(EXIT_FAILURE);
 	}
 
-	// casting magic
+	/* find IP header info with sneaky cast */
 	ip = (struct sniff_ip*)(packet + hdr_size);
 	strcpy(srcname, inet_ntoa(ip->ip_src));
 
-	// dns lookup the source IP address
-	if (dns_lookup_youtube(srcname) == 0) {
+	/* dns lookup the source IP address */
+	if (dns_lookup(srcname, "cache.google.com.") == 0) {
 		fprintf(stderr,"YouTube stream detected, from address %s\n", srcname);
 		pcap_breakloop(handle);
 	}
 }
 
+/* print command usage and exit */
 void usage(char *name, int code) {
 	fprintf(stderr, "%s - detect interruptions in video streams\n", name);
 	fprintf(stderr, "Usage: %s [OPTIONS] [device]\n", name);
@@ -76,18 +80,13 @@ void usage(char *name, int code) {
 }
 
 int main(int argc, char **argv) {
-	char *ip1 = "68.65.124.13"; /* IP of a youtube stream */
-	char *ip2 = "173.194.68.91"; /* IP of a youtube webpage */
-	fprintf(stderr, "lookup %s: %d\n", ip1, dns_lookup_youtube(ip1)); /* should print 0 */
-	fprintf(stderr, "lookup %s: %d\n", ip2, dns_lookup_youtube(ip2)); /* should not print 0 */
-
 	int opt;
 
 	char errbuf[PCAP_ERRBUF_SIZE];
-	struct bpf_program fp; 	/* to hold compiled program */
+	struct bpf_program fp; 	/* to hold compiled filter */
 	bpf_u_int32 pMask; 		/* subnet mask */
 	bpf_u_int32 pNet;		/* ip address */
-	char *device;
+	char *device;			/* name of network device */
 	u_char *link; 			/* type of link layer header */
 
 
@@ -96,7 +95,6 @@ int main(int argc, char **argv) {
 		usage(argv[0],1);
 	}
 
-
 	// Parse command line options
 	while ((opt = getopt(argc, argv, "h")) != -1) {
 		switch (opt) {
@@ -104,11 +102,11 @@ int main(int argc, char **argv) {
 				usage(argv[0],0);
 				break; 
 			default: 
-				usage(argv[0],1);
+				usage(argv[0],EXIT_FAILURE);
 		}
 	}
 	
-	// The last option must be the device name
+	/* The last option must be the device name */
 	device = argv[argc-1];
 
 	printf("\nStarting TCP capture on device [%s]...\n",argv[1]);
@@ -136,20 +134,20 @@ int main(int argc, char **argv) {
 		default:
 			/* something else */
 			fprintf(stderr, "Device %s is not supported. Please use an ethernet or WLAN device.\n", device);
-			exit(2);
+			return EXIT_FAILURE;
 	}
 
 
 	// compile the filter expression
 	if (pcap_compile(handle, &fp, "tcp", 0, pNet) == -1) {
-		printf("\npcap_compile() failed\n");
-		return -1;
+		fprintf(stderr,"\npcap_compile() failed\n");
+		return EXIT_FAILURE;
 	}
 
 	// set the filter
 	if (pcap_setfilter(handle, &fp) == -1) {
-		printf("\npcap_setfilter() failed\n");
-		exit(1);
+		fprintf(stderr,"\npcap_setfilter() failed\n");
+		return EXIT_FAILURE;
 	}
 
 	// compiled filter no longer needed

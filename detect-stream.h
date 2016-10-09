@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-// returns 0 if addr resolves to cache.google.com 
-int dns_lookup_youtube(char *addr);
+// returns 0 if addr resolves to hostname
+int dns_lookup(char *addr, char *hostname);
 
 #endif
