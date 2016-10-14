@@ -1,4 +1,4 @@
-#include "detect-stream.h"
+#include "detect_stream.h"
 
 int dns_lookup(char *addr, char *hostname) {
 	FILE *fp;
