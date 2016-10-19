@@ -1,6 +1,16 @@
 #ifndef CALLBACK_DETECT_STREAM_H
 #define CALLBACK_DETECT_STREAM_H
 
+#include <pcap.h>
+#include <sys/types.h>
+#include <netinet/ip.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include "detect_stream.h"
+
 /* help from http://www.tcpdump.org/pcap.html */
 /* IP header */
 struct sniff_ip {
@@ -21,6 +31,9 @@ struct sniff_ip {
 
 #define SIZE_ETHERNET 14
 #define SIZE_WLAN 30
+
+extern pcap_t *handle;
+extern char *streamip;
 
 void callback_detect_stream(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *packet); 
 

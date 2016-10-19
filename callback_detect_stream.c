@@ -1,14 +1,17 @@
+#include "callback_detect_stream.h"
+
 void callback_detect_stream(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *packet) {
 	static int count = 1;
 	int hdr_size;
 	char srcname[100]; 
+	struct sniff_ip *ip;
 	printf("Packet number [%d]\ttime: %ld %ld\n", count++, (long int)(pkthdr->ts.tv_sec), (long int)(pkthdr->ts.tv_usec));
 	
 
 	/* use length of link layer header to get to the IP header */
-	if (strcmp((char *)arg, "e") == 0) {
+	if (*arg == (u_char)'e') {
 		hdr_size = SIZE_ETHERNET;
-	} else if (strcmp((char *)arg, "w") == 0) {
+	} else if (*arg == (u_char)'w') {
 		hdr_size = SIZE_WLAN;
 	} else {
 		/* not ethernet or WLAN */

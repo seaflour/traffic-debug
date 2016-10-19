@@ -18,9 +18,9 @@ int main(int argc, char **argv) {
 	char errbuf[PCAP_ERRBUF_SIZE];
 	int opt;
 	char *device;	/* network device */
-	u_char *link;
-	int log;
-	char *fname = NULL;
+	u_char link;
+	char *ifname = NULL;	/* file name for reading in */
+	char *ofname = NULL;	/* file name for writing out */
 
 	// Check if sufficient arguments were supplied
 	if (argc < 2) {
@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
 	}
 
 	// Parse command line options
-	while ((opt = getopt(argc, argv, "hl")) != -1) {
+	while ((opt = getopt(argc, argv, "hlo:i:")) != -1) {
 		switch (opt) {
 			case 'h':
 				usage(argv[0],0);
@@ -36,13 +36,27 @@ int main(int argc, char **argv) {
 			case 'l':
 				print_devices();
 				break;
+			case 'o':
+				if (optarg == NULL) {
+					fprintf(stderr,"No filename provided.\n");
+					usage(argv[0], EXIT_FAILURE);
+				}
+				ofname = optarg;
+				break;
+			case 'i':
+				if (optarg == NULL) {
+					fprintf(stderr,"No filename provided.\n");
+					usage(argv[0], EXIT_FAILURE);
+				}
+				ifname = optarg;
+				break;
 			default: 
 				usage(argv[0],EXIT_FAILURE);
 		}
 	}
 
-	if (fname != NULL) {
-		handle = pcap_open_offline(fname,errbuf);
+	if (ifname != NULL) {
+		handle = pcap_open_offline(ifname,errbuf);
 		if (handle == NULL) {
 			fprintf(stderr, "%s\n", errbuf);
 			exit(EXIT_FAILURE);
@@ -52,16 +66,20 @@ int main(int argc, char **argv) {
 		device = argv[argc-1];
 
 		handle = detect_init(device, &link, errbuf);
+		if (handle == NULL) {
+			fprintf(stderr, "Error: %s\n.", errbuf);
+			exit(EXIT_FAILURE);
+		}
 
-		pcap_loop(handle, -1, callback_detect_stream, link); 
+		pcap_loop(handle, -1, callback_detect_stream, &link); 
 
-		/* tentatively */
-		if (pcap_setfilter(handle, &fp) == -1) {
+		/* create new filter */
+/*		if (pcap_setfilter(handle, &fp) == -1) {
 			fprintf(stderr, "\npcap_setfilter() failed!\n");
 			return EXIT_FAILURE;
-		}
+		}*/
 	}
-	if (log) { 
+	if (ofname != NULL) { 
 		pcap_loop(handle, -1, callback_stream_log, NULL);
 	} else {
 		pcap_loop(handle, -1, callback_stream_analyze, NULL);
