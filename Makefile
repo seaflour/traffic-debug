@@ -1,7 +1,7 @@
 #makefile for traffic_debug
 
 CC = gcc
-CFLAGS = -Wall -Werror -g
+CFLAGS = -Wall -Werror -g -std=gnu99
 LDFLAGS = -lpcap
 
 # List of sources
