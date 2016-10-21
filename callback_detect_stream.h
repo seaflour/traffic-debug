@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "detect_stream.h"
+#include "global.h"
 
 /* help from http://www.tcpdump.org/pcap.html */
 /* IP header */
@@ -32,8 +33,8 @@ struct sniff_ip {
 #define SIZE_ETHERNET 14
 #define SIZE_WLAN 30
 
-extern pcap_t *handle;
-extern char *streamip;
+/*extern pcap_t *handle;*/
+/*extern char streamip[16];*/
 
 void callback_detect_stream(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *packet); 
 
