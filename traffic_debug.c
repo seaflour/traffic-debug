@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
 	u_char link;
 	char *ifname = NULL;	/* file name for reading in */
 	char *ofname = NULL;	/* file name for writing out */
-	struct bpf_program fp; 	/* compiled filter */
+	char filter[24];
 
 	// Check if sufficient arguments were supplied
 	if (argc < 2) {
@@ -91,12 +91,12 @@ int main(int argc, char **argv) {
 
 		strcpy(streamip,"");
 		pcap_loop(handle, -1, callback_detect_stream, &link); 
+		sprintf(filter, "src net %s", streamip);
 
-		fprintf(stderr,"Filtering to address %s...\n", streamip);
+		fprintf(stderr,"Filtering on '%s'...\n", filter);
 
 		/* create new filter */
-
-		handle = handle_init(device, streamip, &link, errbuf);
+		handle = handle_init(device, filter, &link, errbuf);
 		if (handle == NULL) {
 			fprintf(stderr, "Error: %s\n.", errbuf);
 			exit(EXIT_FAILURE);
