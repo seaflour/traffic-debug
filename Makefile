@@ -1,7 +1,7 @@
 #makefile for traffic_debug
 
 CC = gcc
-CFLAGS = -Wall -Werror -g
+CFLAGS = -Wall -Werror -g -std=gnu99
 LDFLAGS = -lpcap
 
 # List of sources
@@ -18,7 +18,7 @@ $(EXECUTABLE): $(OBJECTS)
 
 traffic_debug.o: traffic_debug.c traffic_debug.h callback_stream_log.h callback_stream_analyze.h callback_detect_stream.h detect_stream.h handle_init.h
 	$(CC) $(CFLAGS) -c $<
-	
+
 callback_stream_log.o: callback_stream_log.c callback_stream_log.h
 	$(CC) $(CFLAGS) -c $<
 
