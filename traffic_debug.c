@@ -107,7 +107,15 @@ int main(int argc, char **argv) {
 		}*/
 	}
 	if (ofname != NULL) { 
-		pcap_loop(handle, -1, callback_stream_log, NULL);
+		pcap_dumper_t *dump;
+
+		if ((dump = pcap_dump_open(handle, ofname)) != NULL) {
+			pcap_loop(handle, -1, callback_stream_log, (unsigned char *) dump);
+		} else {
+			fprintf(stderr, "%s\n", errbuf);
+			pcap_close(handle);
+			exit(EXIT_FAILURE);
+		}
 	} else {
 		pcap_loop(handle, -1, callback_stream_analyze, NULL);
 	}
