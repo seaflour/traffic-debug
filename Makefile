@@ -5,7 +5,7 @@ CFLAGS = -Wall -Werror -g -std=gnu99
 LDFLAGS = -lpcap
 
 # List of sources
-SOURCES = traffic_debug.c detect_init.c detect_stream.c callback_detect_stream.c callback_stream_analyze.c callback_stream_log.c
+SOURCES = traffic_debug.c handle_init.c detect_stream.c callback_detect_stream.c callback_stream_analyze.c callback_stream_log.c
 OBJECTS = $(SOURCES:.c=.o)
 
 # Executable target
@@ -16,7 +16,7 @@ all: $(SOURCES) $(EXECUTABLE)
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $@ $(LDFLAGS)
 
-traffic_debug.o: traffic_debug.c traffic_debug.h callback_stream_log.h callback_stream_analyze.h callback_detect_stream.h detect_stream.h
+traffic_debug.o: traffic_debug.c traffic_debug.h callback_stream_log.h callback_stream_analyze.h callback_detect_stream.h detect_stream.h handle_init.h
 	$(CC) $(CFLAGS) -c $<
 	
 callback_stream_log.o: callback_stream_log.c callback_stream_log.h
@@ -31,7 +31,7 @@ callback_detect_stream.o: callback_detect_stream.c callback_detect_stream.h
 detect_stream.o: detect_stream.c detect_stream.h
 	$(CC) $(CFLAGS) -c $<
 
-detect_init.o: detect_init.c detect_init.h
+handle_init.o: handle_init.c handle_init.h
 	$(CC) $(CFLAGS) -c $<
 
 clean:
