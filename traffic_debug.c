@@ -26,6 +26,15 @@ void cleanup(){
 	printf("\nFinished.\n");
 }
 
+void signal_handler(int signo){
+	if (signo == SIGINT){
+		printf("\nExiting...");
+		pcap_breakloop(handle);
+		cleanup();
+		exit(0);
+	} 
+} 
+
 /*extern pcap_t *handle;*/
 /*extern char streamip[16];*/
 
@@ -37,6 +46,10 @@ int main(int argc, char **argv) {
 	char *ifname = NULL;	/* file name for reading in */
 	char *ofname = NULL;	/* file name for writing out */
 	char filter[24];
+
+	/* register signal handler */
+	if (signal(SIGINT, signal_handler) == SIG_ERR)
+		fprintf(stderr,"Cannot handle SIGINT\n");
 
 	// Check if sufficient arguments were supplied
 	if (argc < 2) {
