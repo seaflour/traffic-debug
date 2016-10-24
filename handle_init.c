@@ -1,6 +1,6 @@
 #include "handle_init.h"
 
-pcap_t *handle_init(char *device, u_char *link, char *errbuf) {
+pcap_t *handle_init(char *device, char *filter,  u_char *link, char *errbuf) {
     pcap_t *handle;
     bpf_u_int32 pNet; /* ip address */
     bpf_u_int32 pMask; /* Subnet mask */
@@ -27,7 +27,7 @@ pcap_t *handle_init(char *device, u_char *link, char *errbuf) {
 
 
     // compile the filter expression
-    if (pcap_compile(handle, &fp, "tcp and not src host localhost", 0, pNet) == -1) {
+    if (pcap_compile(handle, &fp, filter, 0, pNet) == -1) {
         sprintf(errbuf, "pcap_compile() failed\n");
         return NULL;
     }
