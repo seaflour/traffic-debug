@@ -1,4 +1,4 @@
-#include "detect_init.h"
+#include "handle_init.h"
 
 pcap_t *detect_init(char *device, u_char *link, char *errbuf) {
     pcap_t *handle;
