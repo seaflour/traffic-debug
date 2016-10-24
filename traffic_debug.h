@@ -15,7 +15,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include "detect_stream.h"
-#include "detect_init.h"
+#include "handle_init.h"
 #include "callback_detect_stream.h"
 #include "callback_stream_analyze.h"
 #include "callback_stream_log.h"
