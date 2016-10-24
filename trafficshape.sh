@@ -33,6 +33,9 @@ IP=128.180.142.253     # Host IP
 # Filter options for limiting the intended interface.
 U32="$TC filter add dev $IF protocol ip parent 1:0 prio 1 u32"
 
+# drop rate hoo haa
+RATE="10%"
+
 start() {
 
 # We'll use Hierarchical Token Bucket (HTB) to shape bandwidth.
@@ -53,6 +56,11 @@ start() {
 # The 'dst' IP address is used to limit download speed, and the
 # 'src' IP address is used to limit upload speed.
 
+}
+
+drop() {
+	# start dropping packets
+	$TC qdisc change dev $IF root netem loss $RATE
 }
 
 stop() {
@@ -86,6 +94,13 @@ case "$1" in
     start
     echo "done"
     ;;
+
+  drop)
+
+	echo -n "Starting packet dropping: "
+	drop
+	echo "done"
+	;;
 
   stop)
 

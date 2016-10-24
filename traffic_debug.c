@@ -29,6 +29,15 @@ void cleanup() {
     printf("\nFinished.\n");
 }
 
+void signal_handler(int signo){
+	if (signo == SIGINT){
+		printf("\nExiting...");
+		pcap_breakloop(handle);
+		cleanup();
+		exit(0);
+	} 
+} 
+
 /*extern pcap_t *handle;*/
 
 /*extern char streamip[16];*/
@@ -78,11 +87,15 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "No direction specified.\n");
                     usage(argv[0], EXIT_FAILURE);
                 }
-                capDir = optarg
+                capDir = optarg;
             default:
                 usage(argv[0], EXIT_FAILURE);
         }
     }
+
+	/* register signal handler */
+	if (signal(SIGINT, signal_handler) == SIG_ERR)
+		fprintf(stderr,"Cannot handle SIGINT\n");
 
     if (ifname != NULL) {
         handle = pcap_open_offline(ifname, errbuf);
@@ -110,7 +123,7 @@ int main(int argc, char **argv) {
             pcap_setdirection(handle, PCAP_D_INOUT);
         } else {
             printf("Error processing option, setting to default: 'INOUT'\n");
-            pcap_setdirection(handle, PCAP_D_INOUT)
+            pcap_setdirection(handle, PCAP_D_INOUT);
         }
 
         printf("Starting capture on device [%s]...\n", device);
@@ -125,7 +138,7 @@ int main(int argc, char **argv) {
         handle = handle_init(device, filter, &link, errbuf);
 
         //set capture to statistics mode and fill in stat struct
-        if (pcap_stats(handle, stat) < 0) {
+        if (pcap_stats(handle, &stat) < 0) {
             fprintf(stderr, "%s\n", errbuf);
             //pcap_close(handle);
             //exit(EXIT_FAILURE);
