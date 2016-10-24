@@ -88,6 +88,7 @@ int main(int argc, char **argv) {
                     usage(argv[0], EXIT_FAILURE);
                 }
                 capDir = optarg;
+		break;
             default:
                 usage(argv[0], EXIT_FAILURE);
         }
