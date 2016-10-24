@@ -22,7 +22,7 @@
 #include "callback_stream_log.h"
 
 pcap_t *handle;
-char *streamip;
+char streamip[16];
 
 void usage(char *name, int code);
 void print_devices();

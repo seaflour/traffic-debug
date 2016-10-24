@@ -28,7 +28,7 @@ void callback_detect_stream(u_char *arg, const struct pcap_pkthdr *pkthdr, const
     if (dns_lookup(srcname, "cache.google.com.") == 0) {
         fprintf(stderr, "YouTube stream detected, from address %s\n", srcname);
         if (strcmp(streamip, "") == 0)
-            streamip = srcname;
+			strcpy(streamip, srcname);
         pcap_breakloop(handle);
     }
 }
