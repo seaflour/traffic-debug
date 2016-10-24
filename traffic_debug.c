@@ -121,15 +121,15 @@ int main(int argc, char **argv) {
 
         fprintf(stderr, "Filtering on '%s'...\n", filter);
 
+        /* create new filter */
+        handle = handle_init(device, filter, &link, errbuf);
+
         //set capture to statistics mode and fill in stat struct
         if (pcap_stats(handle, stat) < 0) {
             fprintf(stderr, "%s\n", errbuf);
             //pcap_close(handle);
             //exit(EXIT_FAILURE);
         }
-
-        /* create new filter */
-        handle = handle_init(device, filter, &link, errbuf);
         if (handle == NULL) {
             fprintf(stderr, "Error: %s\n.", errbuf);
             exit(EXIT_FAILURE);
