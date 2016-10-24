@@ -1,6 +1,6 @@
 #include "handle_init.h"
 
-pcap_t *detect_init(char *device, u_char *link, char *errbuf) {
+pcap_t *handle_init(char *device, u_char *link, char *errbuf) {
     pcap_t *handle;
     bpf_u_int32 pNet; /* ip address */
     bpf_u_int32 pMask; /* Subnet mask */
