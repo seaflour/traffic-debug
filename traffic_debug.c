@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
         } else if ((strcmp(capDir, "inout")) == 0) {
             pcap_setdirection(handle, PCAP_D_INOUT);
         } else {
-            printf("Error processing option, setting to default: 'INOUT'\n");
+/*            printf("Error processing option, setting to default: 'INOUT'\n");*/
             pcap_setdirection(handle, PCAP_D_INOUT);
         }
 
