@@ -22,10 +22,10 @@ TC=/sbin/tc
 IF=wlp3s0             # Interface
 
 # Download limit (in mega bits)
-DNLD=10kbit          # DOWNLOAD Limit
+DNLD=100kbit          # DOWNLOAD Limit
 
 # Upload limit (in mega bits)
-UPLD=10kbit          # UPLOAD Limit
+UPLD=100kbit          # UPLOAD Limit
 
 # IP address of the machine we are controlling
 IP=128.180.142.253     # Host IP
@@ -34,7 +34,7 @@ IP=128.180.142.253     # Host IP
 U32="$TC filter add dev $IF protocol ip parent 1:0 prio 1 u32"
 
 # drop rate hoo haa
-RATE="10%"
+RATE="99%"
 
 start() {
 
@@ -60,7 +60,7 @@ start() {
 
 drop() {
 	# start dropping packets
-	$TC qdisc change dev $IF root netem loss $RATE
+	$TC qdisc add dev $IF root netem loss $RATE
 }
 
 stop() {
