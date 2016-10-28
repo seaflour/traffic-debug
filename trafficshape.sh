@@ -34,7 +34,7 @@ IP=128.180.142.253     # Host IP
 U32="$TC filter add dev $IF protocol ip parent 1:0 prio 1 u32"
 
 # drop rate hoo haa
-RATE="99%"
+RATE=$2
 
 start() {
 

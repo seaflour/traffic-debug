@@ -31,10 +31,7 @@ void cleanup() {
 
 void signal_handler(int signo){
 	if (signo == SIGINT){
-		printf("\nExiting...");
 		pcap_breakloop(handle);
-		cleanup();
-		exit(0);
 	} 
 } 
 
@@ -88,8 +85,8 @@ int main(int argc, char **argv) {
                     usage(argv[0], EXIT_FAILURE);
                 }
                 capDir = optarg;
-		break;
-            default:
+				break;
+			default:
                 usage(argv[0], EXIT_FAILURE);
         }
     }
@@ -138,12 +135,6 @@ int main(int argc, char **argv) {
         /* create new filter */
         handle = handle_init(device, filter, &link, errbuf);
 
-        //set capture to statistics mode and fill in stat struct
-        if (pcap_stats(handle, &stat) < 0) {
-            fprintf(stderr, "%s\n", errbuf);
-            //pcap_close(handle);
-            //exit(EXIT_FAILURE);
-        }
         if (handle == NULL) {
             fprintf(stderr, "Error: %s\n.", errbuf);
             exit(EXIT_FAILURE);
@@ -166,10 +157,16 @@ int main(int argc, char **argv) {
     } else {
         pcap_loop(handle, -1, callback_stream_analyze, NULL);
     }
-    //output capture statistics
-    printf("Received Packets: %u\n", stat.ps_recv);
-    printf("Dropped Driver Packets: %u\n", stat.ps_drop);
-    printf("Dropped Interface Packets: %u\n", stat.ps_ifdrop);
-    cleanup();
-    return 0;
+	//set capture to statistics mode and fill in stat struct
+	if (pcap_stats(handle, &stat) < 0) {
+		fprintf(stderr, "%s\n", errbuf);
+		//pcap_close(handle);
+		//exit(EXIT_FAILURE);
+	}
+	//output capture statistics
+	printf("\nReceived Packets: %u\n", stat.ps_recv);
+	printf("Dropped Driver Packets: %u\n", stat.ps_drop);
+	printf("Dropped Interface Packets: %u\n", stat.ps_ifdrop);
+	cleanup();
+	return 0;
 }
