@@ -139,10 +139,9 @@ int main(int argc, char **argv) {
             fprintf(stderr, "Error: %s\n.", errbuf);
             exit(EXIT_FAILURE);
         }
-        /*if (pcap_setfilter(handle, &fp) == -1) {
-                fprintf(stderr, "\npcap_setfilter() failed!\n");
-                return EXIT_FAILURE;
-        }*/
+		
+		/* run tc script */
+		system("trafficshape drop 80%");
     }
     if (ofname != NULL) {
         pcap_dumper_t *dump;
@@ -168,5 +167,6 @@ int main(int argc, char **argv) {
 	printf("Dropped Driver Packets: %u\n", stat.ps_drop);
 	printf("Dropped Interface Packets: %u\n", stat.ps_ifdrop);
 	cleanup();
+	system("trafficshape stop");
 	return 0;
 }

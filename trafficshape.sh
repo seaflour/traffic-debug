@@ -14,6 +14,8 @@
 #  To get the byte figure from bits, divide the number by 8 bit
 #
 
+ sleep 1
+
 #
 # Name of the traffic control command.
 TC=/sbin/tc
