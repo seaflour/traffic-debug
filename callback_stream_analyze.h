@@ -1,5 +1,6 @@
 #include <pcap.h>
 #include <sys/types.h>
+#include "time_analysis.h"
 
 #ifndef CALLBACK_STREAM_ANALYZE_H
 #define CALLBACK_STREAM_ANALYZE_H

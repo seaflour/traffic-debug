@@ -4,6 +4,10 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
     static int count = 1;
     printf("Packet number [%d]\ttime: %ld %ld\n", count++, (long int) (pkthdr->ts.tv_sec), (long int) (pkthdr->ts.tv_usec));
 	
+	time_analysis((long int) (pkthdr->ts.tv_sec), (long int) (pkthdr->ts.tv_usec), (int) (pkthdr->len));
+
+	/* tcp stuff here */
+
 	//output packet
     for (int i = 0; i < (pkthdr->caplen + 1); i++) {
         printf("Packet: %.2x\n", packet[i - 1]);
