@@ -34,16 +34,16 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 			if (sequence < prevseq) {
 				retrans_min++;
 				retrans_max++;
-				printf("* * * suspect retransmission * * *\n");
+				printf("* * * suspect error * * *\n");
 			}
 			if (sequence == prevseq) {
 				retrans_max++;
-				printf("* possible retransmission *\n");
+				printf("* possible error *\n");
 			}
 
 			printf("seq: %u\tack: %u\n", sequence, prevseq);
 			printf("seq: %u\tack: %u (prev)\n", ntohl(tcp_prev->seq), ntohl(tcp_prev->ack));
-			printf("retransmissions: %d - %d\n\n", retrans_min, retrans_max);
+			printf("errors: %d - %d\n\n", retrans_min, retrans_max);
 		}
 
 		memcpy(tcp_prev, tcp_pack, sizeof(struct tcp_header));
