@@ -3,9 +3,10 @@
 void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *packet) {
 
 	static int count = 1;
-	static int retrans_min = 0, retrans_max = 0;
+	static int err_min = 0, err_max = 0;
 	struct tcp_header *tcp_pack;
 	static struct tcp_header *tcp_prev = NULL;
+	static unsigned int prev_len = 0;
 	int hdr_size = SIZE_IP;
 	unsigned int sequence, prevseq;
 
@@ -13,7 +14,7 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 		free(tcp_prev);
 		tcp_prev = NULL;
 	} else {
-		printf("Packet number [%d]\n", count++);
+		printf("Packet number [%d]", count++);
 
 		time_analysis((long int) (pkthdr->ts.tv_sec), (long int) (pkthdr->ts.tv_usec), (int) (pkthdr->len));
 
@@ -32,20 +33,21 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 			prevseq = ntohl(tcp_prev->seq);
 
 			if (sequence < prevseq) {
-				retrans_min++;
-				retrans_max++;
-				printf("* * * suspect error * * *\n");
+				err_min++;
+				err_max++;
+				printf(" * * *");
 			}
 			if (sequence == prevseq) {
-				retrans_max++;
-				printf("* possible error *\n");
+				err_max++;
+				printf(" *");
 			}
 
-			printf("seq: %u\tack: %u\n", sequence, prevseq);
+			printf("\nseq: %u\tack: %u\n", sequence,  ntohl(tcp_pack->ack));
 			printf("seq: %u\tack: %u (prev)\n", ntohl(tcp_prev->seq), ntohl(tcp_prev->ack));
-			printf("errors: %d - %d\n\n", retrans_min, retrans_max);
+			printf("errors: %d - %d\n\n", err_min, err_max);
 		}
 
 		memcpy(tcp_prev, tcp_pack, sizeof(struct tcp_header));
+		prev_len = pkthdr->len;
 	}
 }
