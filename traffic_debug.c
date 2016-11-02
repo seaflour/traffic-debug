@@ -25,12 +25,14 @@ void print_devices() {
 }
 
 void cleanup() {
+	u_char c = 'f';
     pcap_close(handle);
+	callback_stream_analyze(&c, NULL, NULL);
     printf("\nFinished.\n");
 }
 
 void signal_handler(int signo){
-	if (signo == SIGINT){
+	if (signo == SIGINT) {
 		pcap_breakloop(handle);
 	} 
 } 
@@ -101,62 +103,77 @@ int main(int argc, char **argv) {
             fprintf(stderr, "%s\n", errbuf);
             exit(EXIT_FAILURE);
         }
-    } else {
-        // The last option is the device name;
-        device = argv[argc - 1];
+		// determine link-layer header type
+		switch (pcap_datalink(handle)) {
+			case DLT_EN10MB:
+				/* Ethernet */
+				link = (u_char) 'e';
+				break;
+			case DLT_IEEE802_11:
+				/* WLAN */
+				link = (u_char) 'w';
+				break;
+			default:
+				/* something else */
+				fprintf(stderr, "Device is not supported. Please use an ethernet or WLAN device.\n");
+				exit(EXIT_FAILURE);
+		}
+	} else {
+		// The last option is the device name;
+		device = argv[argc - 1];
 
-        handle = handle_init(device, "tcp and not src host localhost", &link, errbuf);
-        if (handle == NULL) {
-            fprintf(stderr, "Error: %s\n.", errbuf);
-            exit(EXIT_FAILURE);
-        }
+		handle = handle_init(device, "tcp and not src host localhost", &link, errbuf);
+		if (handle == NULL) {
+			fprintf(stderr, "Error: %s\n.", errbuf);
+			exit(EXIT_FAILURE);
+		}
 
-        //set the capture direction to only those received by device
-        //other options, PCAP_D_OUT, PCAP_D_INOUT
-        if ((strcmp(capDir, "in")) == 0) {
-            pcap_setdirection(handle, PCAP_D_IN);
-        } else if ((strcmp(capDir, "out")) == 0) {
-            pcap_setdirection(handle, PCAP_D_OUT);
-        } else if ((strcmp(capDir, "inout")) == 0) {
-            pcap_setdirection(handle, PCAP_D_INOUT);
-        } else {
-/*            printf("Error processing option, setting to default: 'INOUT'\n");*/
-            pcap_setdirection(handle, PCAP_D_INOUT);
-        }
+		//set the capture direction to only those received by device
+		//other options, PCAP_D_OUT, PCAP_D_INOUT
+		if ((strcmp(capDir, "in")) == 0) {
+			pcap_setdirection(handle, PCAP_D_IN);
+		} else if ((strcmp(capDir, "out")) == 0) {
+			pcap_setdirection(handle, PCAP_D_OUT);
+		} else if ((strcmp(capDir, "inout")) == 0) {
+			pcap_setdirection(handle, PCAP_D_INOUT);
+		} else {
+			/*            printf("Error processing option, setting to default: 'INOUT'\n");*/
+			pcap_setdirection(handle, PCAP_D_INOUT);
+		}
 
-        printf("Starting capture on device [%s]...\n", device);
+		printf("Starting capture on device [%s]...\n", device);
 
-        strcpy(streamip, "");
-        pcap_loop(handle, -1, callback_detect_stream, &link);
-        sprintf(filter, "src net %s", streamip);
+		strcpy(streamip, "");
+		pcap_loop(handle, -1, callback_detect_stream, &link);
+		sprintf(filter, "src net %s", streamip);
 
-        fprintf(stderr, "Filtering on '%s'...\n", filter);
+		fprintf(stderr, "Filtering on '%s'...\n", filter);
 
-        /* create new filter */
-        handle = handle_init(device, filter, &link, errbuf);
+		/* create new filter */
+		handle = handle_init(device, filter, &link, errbuf);
 
-        if (handle == NULL) {
-            fprintf(stderr, "Error: %s\n.", errbuf);
-            exit(EXIT_FAILURE);
-        }
-        /*if (pcap_setfilter(handle, &fp) == -1) {
-                fprintf(stderr, "\npcap_setfilter() failed!\n");
-                return EXIT_FAILURE;
-        }*/
-    }
-    if (ofname != NULL) {
-        pcap_dumper_t *dump;
+		if (handle == NULL) {
+			fprintf(stderr, "Error: %s\n.", errbuf);
+			exit(EXIT_FAILURE);
+		}
+		/*if (pcap_setfilter(handle, &fp) == -1) {
+		  fprintf(stderr, "\npcap_setfilter() failed!\n");
+		  return EXIT_FAILURE;
+		  }*/
+	}
+	if (ofname != NULL) {
+		pcap_dumper_t *dump;
 
-        if ((dump = pcap_dump_open(handle, ofname)) != NULL) {
-            pcap_loop(handle, -1, callback_stream_log, (unsigned char *) dump);
-        } else {
-            fprintf(stderr, "%s\n", errbuf);
-            pcap_close(handle);
-            exit(EXIT_FAILURE);
-        }
-    } else {
-        pcap_loop(handle, -1, callback_stream_analyze, NULL);
-    }
+		if ((dump = pcap_dump_open(handle, ofname)) != NULL) {
+			pcap_loop(handle, -1, callback_stream_log, (unsigned char *) dump);
+		} else {
+			fprintf(stderr, "%s\n", errbuf);
+			pcap_close(handle);
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		pcap_loop(handle, -1, callback_stream_analyze, &link);
+	}
 	//set capture to statistics mode and fill in stat struct
 	if (pcap_stats(handle, &stat) < 0) {
 		fprintf(stderr, "%s\n", errbuf);
