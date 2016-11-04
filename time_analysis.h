@@ -6,17 +6,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 #include <unistd.h>
 
-long currBps;
 long avgBps;
 long ts;
 int totalPktCount;
 int pps;
 
-extern const time_t startTime;
+#define START_TIME time(NULL)
+time_t totalTime;
 
-void time_analysis(long sec, long usec, int len, int caplen);
-void print_analysis(int tpc);
+void time_analysis(time_t t, long sec, long usec, int len, int caplen);
+void print_analysis(int len);
 
 #endif

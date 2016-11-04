@@ -1,7 +1,6 @@
 #include "callback_stream_analyze.h"
 
 void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *packet) {
-
 	static int count = 1;
 	static int err_min = 0, err_max = 0;
 	struct tcp_header *tcp_pack;
@@ -9,14 +8,21 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 	static unsigned int prev_len = 0;
 	int hdr_size = SIZE_IP;
 	unsigned int sequence, prevseq;
+	int snapshot[((int)(pkthdr->len) / ((int)(pkthdr)->caplen))];
+	struct timeval snapTime;
 
 	if (*arg == (u_char) 'f' && tcp_prev != NULL) {
 		free(tcp_prev);
 		tcp_prev = NULL;
 	} else {
 		printf("Packet number [%d]", count++);
+		gettimeofday(&snapTime, NULL);
+		
+		//TODO: Given the time slice, take the snapshot of the packets?
+		if(((snapTime.tv_sec + (snapTime.tv_usec/1000000)) - START_TIME) == 5){
 
-		time_analysis((long int) (pkthdr->ts.tv_sec), (long int) (pkthdr->ts.tv_usec), (int) (pkthdr->len));
+		}
+		time_analysis(START_TIME, (long int) (pkthdr->ts.tv_sec), (long int) (pkthdr->ts.tv_usec), (int) (pkthdr->len), (int) (pkthdr->caplen));
 
 		if (tcp_prev == NULL) {
 			tcp_prev = malloc(sizeof(struct tcp_header));
