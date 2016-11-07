@@ -8,6 +8,7 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 	static unsigned int prev_len = 0;
 	int hdr_size = SIZE_IP;
 	unsigned int sequence, prevseq;
+
 	int snapshot[((int)(pkthdr->len) / ((int)(pkthdr)->caplen))];
 	struct timeval snapTime;
 
@@ -19,8 +20,13 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 		gettimeofday(&snapTime, NULL);
 		
 		//TODO: Given the time slice, take the snapshot of the packets?
-		if(((snapTime.tv_sec + (snapTime.tv_usec/1000000)) - START_TIME) == 5){
-
+		time_t tempTime = snapTime.tv_sec + (snapTime.tv_usec/1000000);
+		if((tempTime - START_TIME) == 5){
+			if((count/tempTime) < 10){ // This indicates low pps.
+				print_alert(tempTime, 0);
+			} else if(snapshot/tempTime){ // This indiciates low bytes/sec.
+				print_alert(tempTime, 1);
+			}
 		}
 		time_analysis(START_TIME, (long int) (pkthdr->ts.tv_sec), (long int) (pkthdr->ts.tv_usec), (int) (pkthdr->len), (int) (pkthdr->caplen));
 

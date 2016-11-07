@@ -37,3 +37,21 @@ void print_analysis(int len)
     printf("Total Packets: %d\n", totalPktCount);
     printf("PacketsPerSecond: %d\n", pps);
 }
+
+/**
+ * Print alert message notifying user of 
+ * network interruption.
+ */
+void print_alert(time_t alertTime, int flag)
+{
+    struct tm *ts;
+    ts = localtime(alertTime);
+    if (flag == 0)
+    {
+        printf("Low pps expereinced at %s\n", asctime(ts));
+    }
+    else if (flag == 1)
+    {
+        printf("Low bytes/sec experienced at %s\n", asctime(ts));
+    }
+}

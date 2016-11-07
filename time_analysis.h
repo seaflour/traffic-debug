@@ -19,5 +19,6 @@ time_t totalTime;
 
 void time_analysis(time_t t, long sec, long usec, int len, int caplen);
 void print_analysis(int len);
+void print_alert(time_t at, int flag);
 
 #endif
