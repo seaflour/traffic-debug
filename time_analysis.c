@@ -45,7 +45,7 @@ void print_analysis(int len)
 void print_alert(time_t alertTime, int flag)
 {
     struct tm *ts;
-    ts = localtime(alertTime);
+    ts = localtime(&alertTime);
     if (flag == 0)
     {
         printf("Low pps expereinced at %s\n", asctime(ts));
