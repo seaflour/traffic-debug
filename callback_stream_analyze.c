@@ -12,6 +12,7 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 
 	int snapshot[((int)(pkthdr->len) / ((int)(pkthdr)->caplen))];
 	struct timeval snapTime;
+	static int caplenCount = 0;
 
 	if (*arg == (u_char) 'f' && tcp_prev != NULL) {
 		free(tcp_prev);
@@ -21,12 +22,13 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 		printf("Packet number [%d]", count++);
 		gettimeofday(&snapTime, NULL);
 		
-		//TODO: Given the time slice, take the snapshot of the packets?
 		time_t tempTime = snapTime.tv_sec + (snapTime.tv_usec/1000000);
+		caplenCount += (int)(pkthdr->caplen);
+
 		if((tempTime - START_TIME) == 5){
 			if((count/tempTime) < 10){ // This indicates low pps.
 				print_alert(tempTime, 0);
-			} else if(snapshot/tempTime){ // This indiciates low bytes/sec.
+			} else if(caplenCount/tempTime){ // This indiciates low bytes/sec.
 				print_alert(tempTime, 1);
 			}
 		}
