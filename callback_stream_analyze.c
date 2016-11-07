@@ -13,25 +13,21 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 	int hdr_size = SIZE_IP;
 	unsigned int sequence, prevseq;
 
-	//int snapshot = (((int)(pkthdr->len) / ((int)(pkthdr)->caplen)));
-	struct timeval snapTime;
 	time_t updateTime = START_TIME;
 	static int caplenCount = 0;
 	
 	if (*arg == (u_char) 'f' && tcp_prev != NULL) {
 		free(tcp_prev);
 		tcp_prev = NULL;
-	} else {
-		// Get the current time of day after START_TIME
-		gettimeofday(&snapTime, NULL);
-		
+	} else {		
 		// Add up the total sec and usec together
-		time_t tempTime = snapTime.tv_sec + (snapTime.tv_usec/1000000);
+		time_t tempTime = pkthdr->ts.tv_sec;
 		// Track the total amount of bytes we have seen so far
 		caplenCount += (int)(pkthdr->caplen);
 
 		// Check in a blocks of n time for odd pps and bps
-		// NOTE: This time may need to change
+		// NOTE: This time may need to change - 1478539661
+		// TODO: Testing calculations for time
 		if((tempTime - updateTime) > 7){
 			if((count/tempTime) < 10){ // This indicates low pps.
 				print_alert(tempTime, 0);
