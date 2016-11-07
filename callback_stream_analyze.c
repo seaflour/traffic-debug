@@ -1,7 +1,6 @@
 #include "callback_stream_analyze.h"
 
 void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *packet) {
-
 	static int count = 1;
 	static int bad_count = 0, good_count = 0;
 	static int err_min = 0, err_max = 0;
@@ -11,17 +10,27 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 	int hdr_size = SIZE_IP;
 	unsigned int sequence, prevseq;
 
+	int snapshot[((int)(pkthdr->len) / ((int)(pkthdr)->caplen))];
+	struct timeval snapTime;
+
 	if (*arg == (u_char) 'f' && tcp_prev != NULL) {
 		free(tcp_prev);
 		tcp_prev = NULL;
 	} else {
-
-		time_analysis(
-				(long int) (pkthdr->ts.tv_sec), 
-				(long int) (pkthdr->ts.tv_usec), 
-				(int) (pkthdr->len), 
-				(int) (pkthdr->caplen));
-
+		time_analysis((long int) (pkthdr->ts.tv_sec), (long int) (pkthdr->ts.tv_usec), (int) (pkthdr->len), (int) (pkthdr->caplen));
+		printf("Packet number [%d]", count++);
+		gettimeofday(&snapTime, NULL);
+		
+		//TODO: Given the time slice, take the snapshot of the packets?
+		time_t tempTime = snapTime.tv_sec + (snapTime.tv_usec/1000000);
+		if((tempTime - START_TIME) == 5){
+			if((count/tempTime) < 10){ // This indicates low pps.
+				print_alert(tempTime, 0);
+			} else if(snapshot/tempTime){ // This indiciates low bytes/sec.
+				print_alert(tempTime, 1);
+			}
+		}
+		time_analysis(START_TIME, (long int) (pkthdr->ts.tv_sec), (long int) (pkthdr->ts.tv_usec), (int) (pkthdr->len), (int) (pkthdr->caplen));
 
 		if (tcp_prev == NULL) {
 			tcp_prev = malloc(sizeof(struct tcp_header));
