@@ -10,7 +10,7 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 	int hdr_size = SIZE_IP;
 	unsigned int sequence, prevseq;
 
-	int snapshot[((int)(pkthdr->len) / ((int)(pkthdr)->caplen))];
+	//int snapshot = (((int)(pkthdr->len) / ((int)(pkthdr)->caplen)));
 	struct timeval snapTime;
 	static int caplenCount = 0;
 
@@ -18,7 +18,6 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 		free(tcp_prev);
 		tcp_prev = NULL;
 	} else {
-		time_analysis((long int) (pkthdr->ts.tv_sec), (long int) (pkthdr->ts.tv_usec), (int) (pkthdr->len), (int) (pkthdr->caplen));
 		printf("Packet number [%d]", count++);
 		gettimeofday(&snapTime, NULL);
 		
