@@ -21,7 +21,6 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 		free(tcp_prev);
 		tcp_prev = NULL;
 	} else {
-		printf("Packet number [%d]", count++);
 		gettimeofday(&snapTime, NULL);
 		
 		time_t tempTime = snapTime.tv_sec + (snapTime.tv_usec/1000000);
@@ -60,17 +59,23 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 				bad_count++;
 
 				/* TODO: check previous length and maybe flags to confirm errors! */
+				/* or not, it seems to be working okay */
 			} else {
 				good_count++;
 				/* reset bad counter if we've seen enough good packets in a row */
 				if (good_count > THRESHOLD) {
 					/* if there are many errors in a row, that's a bad sign */
 					if (bad_count > THRESHOLD) {
-						printf("Packet number [%d] stream error likely! Run of %d errors.\n", count-1, bad_count);
+						printf("Packet number [%d] stream error likely!\tRun of %d errors.\n", count-THRESHOLD, bad_count);
 					}
 
 					bad_count = 0;
 				}
+			}
+
+			/* Check for TCP reset */
+			if ((tcp_pack->tcp_flags & TCP_RST) == TCP_RST) {
+				printf("Packet number[%d] TCP reset, possibly bad\n", count+1);
 			}
 
 /*			printf("seq: %u\tack: %u (prev)\n", ntohl(tcp_prev->seq), ntohl(tcp_prev->ack)); */
