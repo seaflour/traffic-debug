@@ -1,14 +1,15 @@
 #include "callback_stream_analyze.h"
 
 void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *packet) {
+	/* how many consecutive good/bad packets needed to trigger a reset */
 	const int THRESHOLD = 3;
 
 	static int count = 1;
 	static int bad_count = 0, good_count = 0;
-	static int err_min = 0, err_max = 0;
-	struct tcp_header *tcp_pack;
 	static struct tcp_header *tcp_prev = NULL;
-	static unsigned int prev_len = 0;
+	static unsigned int prev_len = 0; 
+
+	struct tcp_header *tcp_pack;
 	int hdr_size = SIZE_IP;
 	unsigned int sequence, prevseq;
 
@@ -49,9 +50,8 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 
 				/* TODO: check previous length and maybe flags to confirm errors! */
 			} else {
-				/* normal SEQ */
 				good_count++;
-				/* reset bad counter if we've seen 3 good packets in a row */
+				/* reset bad counter if we've seen enough good packets in a row */
 				if (good_count > THRESHOLD) {
 					/* if there are many errors in a row, that's a bad sign */
 					if (bad_count > THRESHOLD) {
