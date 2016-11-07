@@ -24,11 +24,15 @@ void print_devices() {
     exit(0);
 }
 
-void cleanup() {
+void cleanup(int i) {
 	u_char c = 'f';
     pcap_close(handle);
 	callback_stream_analyze(&c, NULL, NULL);
-    printf("\nFinished.\n");
+	if (i != 0) {
+		printf("Stopping packet drop...\n");
+		system("trafficshape stop");
+	}
+	printf("\nFinished.\n");
 }
 
 void signal_handler(int signo){
@@ -51,6 +55,9 @@ int main(int argc, char **argv) {
     char filter[24];
     char *capDir; //capture direction
 
+	char dropstr[24];
+	int droprate = 0;
+
     struct pcap_stat stat; //struct to store capture stats
 
     // Check if sufficient arguments were supplied
@@ -59,7 +66,7 @@ int main(int argc, char **argv) {
     }
 
     // Parse command line options
-    while ((opt = getopt(argc, argv, "hlo:i:d:")) != -1) {
+    while ((opt = getopt(argc, argv, "hlo:i:d:x:")) != -1) {
         switch (opt) {
             case 'h':
                 usage(argv[0], 0);
@@ -82,11 +89,18 @@ int main(int argc, char **argv) {
                 ifname = optarg;
                 break;
             case 'd':
-                if (optarg == NULL) {
+				if (optarg == NULL) {
                     fprintf(stderr, "No direction specified.\n");
                     usage(argv[0], EXIT_FAILURE);
                 }
                 capDir = optarg;
+				break;
+			case 'x':
+				droprate = atoi(optarg);
+                if ((optarg == NULL) || (droprate > 100) || (droprate < 0)) {
+					fprintf(stderr, "No percentage provided.\n");
+					usage(argv[0], EXIT_FAILURE);
+				}
 				break;
 			default:
                 usage(argv[0], EXIT_FAILURE);
@@ -160,6 +174,14 @@ int main(int argc, char **argv) {
 		  fprintf(stderr, "\npcap_setfilter() failed!\n");
 		  return EXIT_FAILURE;
 		  }*/
+
+		fprintf(stderr,"drop rate %d\n",droprate);
+		if (droprate != 0) {
+			sprintf(dropstr,"trafficshape drop %d", droprate);
+			printf("Beginning packet drop at %d%%\n", droprate);
+			system(dropstr);
+		}
+
 	}
 	if (ofname != NULL) {
 		pcap_dumper_t *dump;
@@ -184,6 +206,6 @@ int main(int argc, char **argv) {
 	printf("\nReceived Packets: %u\n", stat.ps_recv);
 	printf("Dropped Driver Packets: %u\n", stat.ps_drop);
 	printf("Dropped Interface Packets: %u\n", stat.ps_ifdrop);
-	cleanup();
+	cleanup(droprate);
 	return 0;
 }
