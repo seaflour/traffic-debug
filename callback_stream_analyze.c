@@ -44,16 +44,18 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 		}
 		time_analysis(START_TIME, (long int) (pkthdr->ts.tv_sec), (long int) (pkthdr->ts.tv_usec), (int) (pkthdr->len), (int) (pkthdr->caplen));
 
+		if (*arg == (u_char) 'e') {
+			hdr_size += SIZE_ETHERNET;
+		} else if (*arg == (u_char) 'w') {
+			hdr_size += SIZE_WLAN;
+		}
+
+		tcp_pack = (struct tcp_header*)(packet + hdr_size);
+
 		if (tcp_prev == NULL) {
 			tcp_prev = malloc(sizeof(struct tcp_header));
 		} else {
 			/* add length of link layer header to the IP header */
-			if (*arg == (u_char) 'e') {
-				hdr_size += SIZE_ETHERNET;
-			} else if (*arg == (u_char) 'w') {
-				hdr_size += SIZE_WLAN;
-			}
-			tcp_pack = (struct tcp_header*)(packet + hdr_size);
 
 			sequence = ntohl(tcp_pack->seq);
 			prevseq = ntohl(tcp_prev->seq);
@@ -87,9 +89,9 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 				printf("Packet number[%d] TCP reset, possibly bad\n", count+1);
 			}
 
-/*			printf("seq: %u\tack: %u (prev)\n", ntohl(tcp_prev->seq), ntohl(tcp_prev->ack)); */
-/*			printf("\nseq: %u\tack: %u\n", sequence,  ntohl(tcp_pack->ack)); */
-/*			printf("errors: %d - %d\n\n", err_min, err_max); */
+			/*			printf("seq: %u\tack: %u (prev)\n", ntohl(tcp_prev->seq), ntohl(tcp_prev->ack)); */
+			/*			printf("\nseq: %u\tack: %u\n", sequence,  ntohl(tcp_pack->ack)); */
+			/*			printf("errors: %d - %d\n\n", err_min, err_max); */
 			count++;
 		}
 
