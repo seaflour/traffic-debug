@@ -22,11 +22,16 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 		free(tcp_prev);
 		tcp_prev = NULL;
 	} else {
+		// Get the current time of day after START_TIME
 		gettimeofday(&snapTime, NULL);
 		
+		// Add up the total sec and usec together
 		time_t tempTime = snapTime.tv_sec + (snapTime.tv_usec/1000000);
+		// Track the total amount of bytes we have seen so far
 		caplenCount += (int)(pkthdr->caplen);
 
+		// Check in a blocks of n time for odd pps and bps
+		// NOTE: This time may need to change
 		if((tempTime - updateTime) > 7){
 			if((count/tempTime) < 10){ // This indicates low pps.
 				print_alert(tempTime, 0);
@@ -34,6 +39,7 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 			if((caplenCount/tempTime) < 10000){ // This indiciates low bytes/sec.
 				print_alert(tempTime, 1);
 			}
+			// Set time to the latest one that triggered a check of the block
 			updateTime = tempTime;
 		}
 		time_analysis(START_TIME, (long int) (pkthdr->ts.tv_sec), (long int) (pkthdr->ts.tv_usec), (int) (pkthdr->len), (int) (pkthdr->caplen));
