@@ -5,7 +5,7 @@ void callback_detect_stream(u_char *arg, const struct pcap_pkthdr *pkthdr, const
     int hdr_size;
     char srcname[100];
     struct sniff_ip *ip;
-    printf("Packet number [%d]\n", count++);
+/*    printf("Packet number [%d]\n", count++); */
 
 
     /* use length of link layer header to get to the IP header */
@@ -23,10 +23,10 @@ void callback_detect_stream(u_char *arg, const struct pcap_pkthdr *pkthdr, const
     ip = (struct sniff_ip*) (packet + hdr_size);
     strcpy(srcname, inet_ntoa(ip->ip_src));
 
-    fprintf(stderr, "ip: %s\n", srcname);
+/*    fprintf(stderr, "ip: %s\n", srcname); */
     /* dns lookup the source IP address */
     if (dns_lookup(srcname, "cache.google.com.") == 0) {
-        fprintf(stderr, "**********************************************************\nYouTube stream detected, from address %s\n", srcname);
+        fprintf(stderr, "\nYouTube stream detected, from address %s\n", srcname);
         if (strcmp(streamip, "") == 0)
 			strcpy(streamip, srcname);
         pcap_breakloop(handle);

@@ -29,7 +29,7 @@ void cleanup(int i) {
     pcap_close(handle);
 	callback_stream_analyze(&c, NULL, NULL);
 	if (i != 0) {
-		printf("Stopping packet drop...\n");
+/*		printf("Stopping packet drop...\n"); */
 		system("trafficshape stop");
 	}
 	printf("\nFinished.\n");
@@ -175,10 +175,9 @@ int main(int argc, char **argv) {
 		  return EXIT_FAILURE;
 		  }*/
 
-		fprintf(stderr,"drop rate %d\n",droprate);
 		if (droprate != 0) {
 			sprintf(dropstr,"trafficshape drop %d", droprate);
-			printf("Beginning packet drop at %d%%\n", droprate);
+/*			printf("Beginning packet drop at %d%%\n", droprate); */
 			system(dropstr);
 		}
 
@@ -204,8 +203,8 @@ int main(int argc, char **argv) {
 	}
 	//output capture statistics
 	printf("\nReceived Packets: %u\n", stat.ps_recv);
-	printf("Dropped Driver Packets: %u\n", stat.ps_drop);
-	printf("Dropped Interface Packets: %u\n", stat.ps_ifdrop);
+/*	printf("Dropped Driver Packets: %u\n", stat.ps_drop); */
+/*	printf("Dropped Interface Packets: %u\n", stat.ps_ifdrop); */
 	cleanup(droprate);
 	return 0;
 }
