@@ -15,6 +15,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <signal.h>
+#include <pthread.h>
 #include "detect_stream.h"
 #include "handle_init.h"
 #include "callback_detect_stream.h"
@@ -27,7 +28,7 @@ char streamip[16];
 
 void usage(char *name, int code);
 void print_devices();
-void cleanup(int i);
+void cleanup(int i, pthread_t *tid);
 void signal_handler(int signo);
 int main(int argc, char **argv);
 
