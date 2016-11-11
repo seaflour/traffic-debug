@@ -11,7 +11,7 @@ void *inputTime(void *argp) {
 
 	printf("Press any key to indicate a playback error.\nPress enter when finished.\n\n");
 
-	while (c = getchar() != '\n') {
+	while ((c = getchar()) != '\n') {
 		gettimeofday(&t, NULL);
 		ts = localtime(&(t.tv_sec));
 		strftime(buffer, 80, "%H:%M:%S", ts);
