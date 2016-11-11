@@ -20,6 +20,7 @@
 #include "callback_detect_stream.h"
 #include "callback_stream_analyze.h"
 #include "callback_stream_log.h"
+#include "usertest.h"
 
 pcap_t *handle;
 char streamip[16];

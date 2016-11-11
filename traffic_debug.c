@@ -8,6 +8,7 @@ void usage(char *name, int code) {
     fprintf(stderr, "\t-o\ttake file name to save log to\n");
     fprintf(stderr, "\t-i\ttake file name to analyze\n");
     fprintf(stderr, "\t-d\tspecify device capture direction(in, out, inout)\n");
+	fprintf(stderr, "\t-x PERCENT\tenable packet dropping using tc with a drop rate of PERCENT\n");
     exit(code);
 }
 
