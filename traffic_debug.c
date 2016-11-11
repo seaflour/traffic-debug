@@ -205,6 +205,12 @@ int main(int argc, char **argv) {
 	printf("\nReceived Packets: %u\n", stat.ps_recv);
 /*	printf("Dropped Driver Packets: %u\n", stat.ps_drop); */
 /*	printf("Dropped Interface Packets: %u\n", stat.ps_ifdrop); */
+
+    // printf("Average bytes/sec: %.2f\n", avgBps);
+    // printf("Total time(seconds): %.2f\n", totalTime);
+    // printf("Total Packets: %d\n", totalPktCount);
+    // printf("Packets/sec: %.2f\n", pps);
+
 	cleanup(droprate);
 	return 0;
 }
