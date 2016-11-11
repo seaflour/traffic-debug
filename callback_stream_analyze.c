@@ -13,32 +13,20 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 	int hdr_size = SIZE_IP;
 	unsigned int sequence, prevseq;
 
-	time_t updateTime = START_TIME;
-	static int caplenCount = 0;
-	
 	if (*arg == (u_char) 'f' && tcp_prev != NULL) {
 		free(tcp_prev);
 		tcp_prev = NULL;
-	} else {		
-		// Add up the total sec and usec together
-		time_t tempTime = pkthdr->ts.tv_sec;
-		// Track the total amount of bytes we have seen so far
-		caplenCount += (int)(pkthdr->caplen);
+	} else {
 
-		// Check in a blocks of n time for odd pps and bps
-		// NOTE: This time may need to change - 1478539661
-		// TODO: Testing calculations for time
-		if((tempTime - updateTime) > 7){
-			if((count/tempTime) < 10){ // This indicates low pps.
-				print_alert(tempTime, 0);
-			}
-			if((caplenCount/tempTime) < 10000){ // This indiciates low bytes/sec.
-				print_alert(tempTime, 1);
-			}
-			// Set time to the latest one that triggered a check of the block
-			updateTime = tempTime;
+		time_analysis(absStartTime, (long int)(pkthdr->ts.tv_sec), (long int)(pkthdr->ts.tv_usec), (int)(pkthdr->len), (int)(pkthdr->caplen));
+
+		if (*arg == (u_char) 'e') {
+			hdr_size += SIZE_ETHERNET;
+		} else if (*arg == (u_char) 'w') {
+			hdr_size += SIZE_WLAN;
 		}
-		time_analysis(START_TIME, (long int) (pkthdr->ts.tv_sec), (long int) (pkthdr->ts.tv_usec), (int) (pkthdr->len), (int) (pkthdr->caplen));
+
+		tcp_pack = (struct tcp_header*)(packet + hdr_size);
 
 		if (*arg == (u_char) 'e') {
 			hdr_size += SIZE_ETHERNET;
