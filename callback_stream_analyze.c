@@ -18,8 +18,13 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 		tcp_prev = NULL;
 	} else {
 
-		time_analysis(absStartTime, (long int)(pkthdr->ts.tv_sec), (long int)(pkthdr->ts.tv_usec), (int)(pkthdr->len), (int)(pkthdr->caplen));
-
+		// This will get the first incoming packet's time and stFlag is then set
+		// so this will not run again.
+		if(stFlag != 1){
+			init((long int)(pkthdr->ts.tv_sec));
+		}
+		time_analysis(absStartTime, (long int)(pkthdr->ts.tv_sec), (int)(pkthdr->len), (int)(pkthdr->caplen));
+		
 		if (*arg == (u_char) 'e') {
 			hdr_size += SIZE_ETHERNET;
 		} else if (*arg == (u_char) 'w') {

@@ -5,42 +5,50 @@
  * keeps count of total packets, total receiving time
  * @param st
  * @param sec
- * @param usec
  * @param len
  * @param caplen
  */
 
-void time_analysis(time_t st, long sec, long usec, int len, int caplen)
+void time_analysis(time_t st, long sec, int len, int caplen)
 {
-    print_alert(st, 1);
+    //print_alert(st, 1);
 
+    struct tm *ts;
+    char buf[80];
+    ts = localtime(&st);
+
+    strftime(buf, 80, "%H:%M:%S", ts);
+    //printf("%s\n", buf);
+    
     // Record captured packet length.
     caplenCount += caplen;
 
-    // Get time in seconds when packet came in.
-    updateTime += sec + usec;
+    // Time in seconds when packet came in.
+    updateTime = sec;
+    
+    // This gets the elapsed time since absStartTime and receiving this packet.
+    updateTime -= st;
 
-    // This gets the elapsed time since START_TIME/absStartTime and receiving this packet.
-    updateTime = (updateTime - st) / 1000000;
-
-    // Track the totalTime elapsed since START_TIME.
+    // Track the totalTime elapsed since start.
     totalTime += updateTime;
 
     // Count number of packets we have so far, for use in average.
     totalPktCount++;
+
+    //printf("updateTime2: %f\n", updateTime);
 
     // Check if we are within the desired window of time to check for disruptions.
     // TODO: tune these metrics for best result.
     if (updateTime >= 7)
     {
         // Check for low pps.
-        if ((totalPktCount / updateTime) < 100)
+        if ((totalPktCount / updateTime) < 50)
         {
             print_alert(updateTime, 0);
         }
 
         // Check for low bytes/sec.
-        if ((caplenCount / updateTime) < 100000)
+        if ((caplenCount / updateTime) < 10000)
         {
             print_alert(updateTime, 1);
         }
@@ -72,4 +80,14 @@ void print_alert(time_t alertTime, int flag)
     {
         printf("Low bytes/sec experienced at %s\n", buffer);
     }
+}
+
+void init(long sec){
+    stFlag = 1;
+    totalPktCount = 0;
+    caplenCount = 0;
+    totalTime = 0;
+    updateTime = 0;
+    localStartTime = sec;
+    absStartTime = localStartTime;
 }
