@@ -28,7 +28,7 @@ char streamip[16];
 
 void usage(char *name, int code);
 void print_devices();
-void cleanup(int i, pthread_t *tid);
+void cleanup(int i);
 void signal_handler(int signo);
 int main(int argc, char **argv);
 

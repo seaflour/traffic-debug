@@ -26,15 +26,10 @@ void print_devices() {
     exit(0);
 }
 
-void cleanup(int i, pthread_t *tid) {
+void cleanup(int i) {
 	u_char c = 'f';
 
     pcap_close(handle);
-
-	if (tid != NULL) {
-		pthread_join(*tid, NULL);
-		/* TODO: some kind of analysis or report or something */
-	}
 
 	callback_stream_analyze(&c, NULL, NULL);
 	if (i != 0) {
@@ -67,7 +62,7 @@ int main(int argc, char **argv) {
 
     struct pcap_stat stat; //struct to store capture stats
 
-	pthread_t *tid = NULL;
+	pthread_t tid;
 
     // Check if sufficient arguments were supplied
     if (argc < 2) {
@@ -170,7 +165,9 @@ int main(int argc, char **argv) {
 		printf("Starting capture on device [%s]...\n", device);
 
 		strcpy(streamip, "");
+		/* loop until youtube stream detected */
 		pcap_loop(handle, -1, callback_detect_stream, &link);
+		/* build filter string with ip address of stream */
 		sprintf(filter, "src net %s", streamip);
 
 		fprintf(stderr, "Filtering on '%s'...\n", filter);
@@ -187,7 +184,6 @@ int main(int argc, char **argv) {
 		  return EXIT_FAILURE;
 		  }*/
 
-		fprintf(stderr,"drop rate %d\n",droprate);
 		if (droprate != 0) {
 			sprintf(dropstr,"trafficshape drop %d", droprate);
 			system(dropstr);
@@ -206,7 +202,7 @@ int main(int argc, char **argv) {
 		}
 	} else {
 		if (utest != 0) {
-			pthread_create(tid, NULL, inputTime, NULL);
+			pthread_create(&tid, NULL, inputTime, NULL);
 		}
 
 		pcap_loop(handle, -1, callback_stream_analyze, &link);
@@ -221,6 +217,18 @@ int main(int argc, char **argv) {
 	printf("\nReceived Packets: %u\n", stat.ps_recv);
 	printf("Dropped Driver Packets: %u\n", stat.ps_drop);
 	printf("Dropped Interface Packets: %u\n", stat.ps_ifdrop);
-	cleanup(droprate, tid);
+
+	if (utest != 0) {
+		pthread_join(tid, NULL);
+		/* TODO: some kind of analysis or report or something */
+	}
+
+	cleanup(droprate);
+
+    // printf("Average bytes/sec: %.2f\n", avgBps);
+    // printf("Total time(seconds): %.2f\n", totalTime);
+    // printf("Total Packets: %d\n", totalPktCount);
+    // printf("Packets/sec: %.2f\n", pps);
+
 	return 0;
 }
