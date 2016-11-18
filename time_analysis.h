@@ -10,19 +10,26 @@
 #include <unistd.h>
 
 int stFlag;
+int firstUsecFlag;
+int tempPktCount;
 int totalPktCount;
-int caplenCount;
+int totalCaplen;
+int tempCaplen;
 
 double avgBps;
 double pps;
-double totalTime;
 double updateTime;
+double firstUsec;
+double lastUsec;
 
+time_t absStartTime;   // This is the start time that will be updated as we advance the window.
 time_t localStartTime; // This is the start time of the first packet that came in.
-time_t absStartTime; // This is the start time that will be updated as we advance the window. 
+time_t endTime;        // Hold the final time when the last packet comes in.
 
 void init(long sec);
-void time_analysis(time_t t, long sec, int len, int caplen);
-void print_alert(time_t at, int flag);
+void time_analysis(time_t t, long sec, long usec, int caplen);
+void print_alert(time_t at, long usec, int flag);
+double getTotalTime(time_t t1, time_t t2);
+void printStats();
 
 #endif
