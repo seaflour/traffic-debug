@@ -65,6 +65,9 @@ void print_alert(time_t alertTime, long usec, int flag)
     char buffer[80];            //buffer to hold formatted time string
     ts = localtime(&alertTime); //fill time struct
 
+    // I print usec on a separate line because there is no usec part
+    // in strftime so we print and concatenate the output to strftime's
+    // formatted output.
     strftime(buffer, 80, "%H:%M:%S", ts);
     if (flag == 0)
     {
@@ -91,7 +94,7 @@ void printStats()
 {
     printf("\nTotal Packets: %d\n", totalPktCount);
     printf("Time span (seconds): %.3f\n", (getTotalTime(localStartTime, endTime) + (lastUsec - firstUsec)));
-    printf("Average packets/sec: %.2lf\n", (totalPktCount / getTotalTime(localStartTime, endTime)));
+    printf("Average packets/sec: %.2lf\n", (totalPktCount / (getTotalTime(localStartTime, endTime) + (lastUsec - firstUsec))));
     printf("Total Bytes: %d\n", totalCaplen);
     printf("Average bytes/sec: %.2lf\n", (totalCaplen / (getTotalTime(localStartTime, endTime) + (lastUsec - firstUsec))));
 }
