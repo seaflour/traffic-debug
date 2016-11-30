@@ -1,13 +1,22 @@
 #include "callback_stream_analyze.h"
 
+#define ANSI_RED	"\x1b[31m"
+#define ANSI_RESET	"\x1b[0m"
+
 void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *packet) {
 	/* how many consecutive good/bad packets needed to trigger a reset */
 	const int THRESHOLD = 3;
 
+
 	static int count = 1;
 	static int bad_count = 0, good_count = 0;
 	static struct tcp_header *tcp_prev = NULL;
-	static unsigned int prev_len = 0; 
+/*	static unsigned int prev_len = 0;  */
+	static struct timeval start_error_ts;
+	static struct tm *start_error_timeofday;
+	struct tm *end_error_timeofday;
+	char buff_start[80];
+	char buff_end[80];
 
 	struct tcp_header *tcp_pack;
 	int hdr_size = SIZE_IP;
@@ -50,16 +59,20 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 			prevseq = ntohl(tcp_prev->seq);
 
 			if (sequence < prevseq) {
-				/* SEQ is lower... retransmission likely */	
+			/*	if (good_count != 0) {
+					start_error_ts = pkthdr->ts;
+					start_error_timeofday = localtime(&(pkthdr->ts.tv_sec));
+				}*/
 				good_count = 0;
 				bad_count++;
 			} else if (sequence == prevseq) {
-				/* SEQ is unchanged... retransmission possible*/
+			/*	if (good_count != 0) {
+					start_error_ts = pkthdr->ts;
+					start_error_timeofday = localtime(&(pkthdr->ts.tv_sec));
+				}*/
 				good_count = 0;
 				bad_count++;
 
-				/* TODO: check previous length and maybe flags to confirm errors! */
-				/* or not, it seems to be working okay */
 			} else {
 				good_count++;
 				/* reset bad counter if we've seen enough good packets in a row */
@@ -67,24 +80,29 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 					/* if there are many errors in a row, that's a bad sign */
 					if (bad_count > THRESHOLD) {
 						printf("Packet number [%d] stream error likely!\tRun of %d errors.\n", count-THRESHOLD, bad_count);
+				/*		end_error_timeofday = localtime(&(pkthdr->ts.tv_sec));
+						strftime(buff_start, 80, "%H:%M:%S", start_error_timeofday);
+						strftime(buff_end, 80, "%H:%M:%S", end_error_timeofday);
+						printf(
+							ANSI_RED "Error" ANSI_RESET " at %s.%.6ld - %s.%.6ld: TCP retransmission\n",
+							buff_start,
+							(long) start_error_ts.tv_usec,
+							buff_end,
+							(long) pkthdr->ts.tv_usec
+						);*/
 					}
-
 					bad_count = 0;
 				}
 			}
-
 			/* Check for TCP reset */
-			if ((tcp_pack->tcp_flags & TCP_RST) == TCP_RST) {
-				printf("Packet number[%d] TCP reset, possibly bad\n", count+1);
-			}
-
-			/*			printf("seq: %u\tack: %u (prev)\n", ntohl(tcp_prev->seq), ntohl(tcp_prev->ack)); */
-			/*			printf("\nseq: %u\tack: %u\n", sequence,  ntohl(tcp_pack->ack)); */
-			/*			printf("errors: %d - %d\n\n", err_min, err_max); */
+/*			if ((tcp_pack->tcp_flags & TCP_RST) == TCP_RST) {*/
+/*				printf("Packet number[%d] TCP reset, possibly bad\n", count+1);*/
+/*			}*/
 			count++;
 		}
 
 		memcpy(tcp_prev, tcp_pack, sizeof(struct tcp_header));
-		prev_len = pkthdr->len;
+/*		prev_len = pkthdr->len; */
 	}
+
 }
