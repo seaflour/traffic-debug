@@ -2,24 +2,24 @@
 
 CC = gcc
 CFLAGS = -Wall -g -std=gnu99
-LDFLAGS = -lpcap -lpthread -lncurses
+LDFLAGS = -lpcap -lpthread # -lncurses
 
 # List of sources
-SOURCES = traffic_debug.c handle_init.c detect_stream.c callback_detect_stream.c callback_stream_analyze.c time_analysis.c callback_stream_log.c
+SOURCES = traffic_debug.c handle_init.c detect_stream.c callback_detect_stream.c callback_stream_analyze.c time_analysis.c callback_stream_log.c usertest.c
 OBJECTS = $(SOURCES:.c=.o)
 
 # Executable target
 EXECUTABLE = traffic_debug
 
-all: $(SOURCES) $(EXECUTABLE) usertest
+all: $(SOURCES) $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $@ $(LDFLAGS)
 
-usertest: usertest.c
-	$(CC) $(CFLAGS) -o $@ $< -lncurses
+traffic_debug.o: traffic_debug.c traffic_debug.h callback_stream_log.h callback_stream_analyze.h time_analysis.h callback_detect_stream.h detect_stream.h handle_init.h usertest.h
+	$(CC) $(CFLAGS) -c $<
 
-traffic_debug.o: traffic_debug.c traffic_debug.h callback_stream_log.h callback_stream_analyze.h time_analysis.h callback_detect_stream.h detect_stream.h handle_init.h
+usertest.o: usertest.c usertest.h
 	$(CC) $(CFLAGS) -c $<
 
 callback_stream_log.o: callback_stream_log.c callback_stream_log.h

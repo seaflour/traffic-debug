@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <time.h>
-#include <curses.h>
+#include <signal.h>
+/*#include <curses.h> */
 
 void *inputTime(void *argp);
 
