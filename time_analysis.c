@@ -1,5 +1,9 @@
 #include "time_analysis.h"
 
+#define ANSI_RED	"\x1b[91m"
+#define ANSI_YELLOW	"\x1b[37m"
+#define ANSI_RESET	"\x1b[0m"
+
 // Tracks total packet count, final packet's endTime,
 // checks within a window of time for low bps and/or pps.
 // st - time of last checked packet.
@@ -71,13 +75,15 @@ void print_alert(time_t alertTime, long usec, int flag)
     strftime(buffer, 80, "%H:%M:%S", ts);
     if (flag == 0)
     {
-        printf("[%d] Low pps expereinced at %s", totalPktCount, buffer);
-        printf(".%.6ld\n", usec);
+/*        printf("[%d] Low pps expereinced at %s", totalPktCount, buffer); */
+/*        printf(".%.6ld\n", usec); */
+		printf(ANSI_RED "Error" ANSI_RESET " at %s.%.2ld: " ANSI_YELLOW "low packets/sec\n" ANSI_RESET, buffer, usec/10000); 
     }
     else if (flag == 1)
     {
-        printf("[%d] Low bytes/sec experienced at %s", totalPktCount, buffer);
-        printf(".%.6ld\n", usec);
+/*        printf("[%d] Low bytes/sec experienced at %s", totalPktCount, buffer); */
+/*        printf(".%.6ld\n", usec); */
+/*		printf(ANSI_RED "Error" ANSI_RESET " at %s.%.6ld: low bytes/sec\n", buffer, usec);  */
     }
 }
 
