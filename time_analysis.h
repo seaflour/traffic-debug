@@ -1,9 +1,6 @@
 #ifndef TIME_ANALYSIS_H
 #define TIME_ANALYSIS_H
 
-// The start should be the time of the first packet's arrival.
-#define START_TIME time(NULL)
-
 #include <errno.h>
 #include <time.h>
 #include <stdio.h>
@@ -12,20 +9,27 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+int stFlag;
+int firstUsecFlag;
+int tempPktCount;
 int totalPktCount;
-int caplenCount;
+int totalCaplen;
+int tempCaplen;
 
 double avgBps;
 double pps;
-double totalTime;
 double updateTime;
+double firstUsec;
+double lastUsec;
 
-struct timeval end;
-struct timeval diff;
+time_t absStartTime;   // This is the start time that will be updated as we advance the window.
+time_t localStartTime; // This is the start time of the first packet that came in.
+time_t endTime;        // Hold the final time when the last packet comes in.
 
-time_t absStartTime;
-
-void time_analysis(time_t t, long sec, long usec, int len, int caplen);
-void print_alert(time_t at, int flag);
+void init(long sec);
+void time_analysis(time_t t, long sec, long usec, int caplen);
+void print_alert(time_t at, long usec, int flag);
+double getTotalTime(time_t t1, time_t t2);
+void printStats();
 
 #endif

@@ -3,13 +3,11 @@
 void usage(char *name, int code) {
     fprintf(stderr, "%s - detect interruptions in video streams\n", name);
     fprintf(stderr, "Usage: %s [OPTIONS] [device]\n", name);
-    fprintf(stderr, "\nOPTIONS\n\t-h\tprint this text.\n");
-    fprintf(stderr, "\t-l\tlist available network devices.\n");
-    fprintf(stderr, "\t-o\ttake file name to save log to.\n");
-    fprintf(stderr, "\t-i\ttake file name to analyze.\n");
-    fprintf(stderr, "\t-d\tspecify device capture direction(in, out, inout).\n");
-	fprintf(stderr, "\t-x PERCENT\tenable packet dropping using tc with a drop rate of PERCENT.\n");
-	fprintf(stderr, "\t-t\tperform a user test of the program's accuracy.\n");
+    fprintf(stderr, "\nOPTIONS\n\t-h\tprint this text\n");
+    fprintf(stderr, "\t-l\tlist available network devices\n");
+    fprintf(stderr, "\t-o\ttake file name to save log to\n");
+    fprintf(stderr, "\t-i\ttake file name to analyze\n");
+    fprintf(stderr, "\t-d\tspecify device capture direction(in, out, inout)\n");
     exit(code);
 }
 
@@ -28,14 +26,12 @@ void print_devices() {
 
 void cleanup(int i) {
 	u_char c = 'f';
-
     pcap_close(handle);
-
 	callback_stream_analyze(&c, NULL, NULL);
 	if (i != 0) {
+		printf("Stopping packet drop...\n");
 		system("trafficshape stop");
 	}
-
 	printf("\nFinished.\n");
 }
 
@@ -45,8 +41,11 @@ void signal_handler(int signo){
 	} 
 } 
 
-int main(int argc, char **argv) {
+/*extern pcap_t *handle;*/
 
+/*extern char streamip[16];*/
+
+int main(int argc, char **argv) {
     char errbuf[PCAP_ERRBUF_SIZE];
     int opt;
     char *device; /* network device */
@@ -58,11 +57,8 @@ int main(int argc, char **argv) {
 
 	char dropstr[24];
 	int droprate = 0;
-	int utest = 0;
 
     struct pcap_stat stat; //struct to store capture stats
-
-	pthread_t tid;
 
     // Check if sufficient arguments were supplied
     if (argc < 2) {
@@ -70,7 +66,7 @@ int main(int argc, char **argv) {
     }
 
     // Parse command line options
-    while ((opt = getopt(argc, argv, "hlo:i:d:x:t")) != -1) {
+    while ((opt = getopt(argc, argv, "hlo:i:d:x:")) != -1) {
         switch (opt) {
             case 'h':
                 usage(argv[0], 0);
@@ -105,9 +101,6 @@ int main(int argc, char **argv) {
 					fprintf(stderr, "No percentage provided.\n");
 					usage(argv[0], EXIT_FAILURE);
 				}
-				break;
-			case 't':
-				utest = 1;
 				break;
 			default:
                 usage(argv[0], EXIT_FAILURE);
@@ -165,9 +158,7 @@ int main(int argc, char **argv) {
 		printf("Starting capture on device [%s]...\n", device);
 
 		strcpy(streamip, "");
-		/* loop until youtube stream detected */
 		pcap_loop(handle, -1, callback_detect_stream, &link);
-		/* build filter string with ip address of stream */
 		sprintf(filter, "src net %s", streamip);
 
 		fprintf(stderr, "Filtering on '%s'...\n", filter);
@@ -184,8 +175,10 @@ int main(int argc, char **argv) {
 		  return EXIT_FAILURE;
 		  }*/
 
+		fprintf(stderr,"drop rate %d\n",droprate);
 		if (droprate != 0) {
 			sprintf(dropstr,"trafficshape drop %d", droprate);
+			printf("Beginning packet drop at %d%%\n", droprate);
 			system(dropstr);
 		}
 
@@ -201,10 +194,6 @@ int main(int argc, char **argv) {
 			exit(EXIT_FAILURE);
 		}
 	} else {
-		if (utest != 0) {
-			pthread_create(&tid, NULL, inputTime, NULL);
-		}
-
 		pcap_loop(handle, -1, callback_stream_analyze, &link);
 	}
 	//set capture to statistics mode and fill in stat struct
@@ -218,17 +207,8 @@ int main(int argc, char **argv) {
 	printf("Dropped Driver Packets: %u\n", stat.ps_drop);
 	printf("Dropped Interface Packets: %u\n", stat.ps_ifdrop);
 
-	if (utest != 0) {
-		pthread_join(tid, NULL);
-		/* TODO: some kind of analysis or report or something */
-	}
-
+	printStats();
+	
 	cleanup(droprate);
-
-    // printf("Average bytes/sec: %.2f\n", avgBps);
-    // printf("Total time(seconds): %.2f\n", totalTime);
-    // printf("Total Packets: %d\n", totalPktCount);
-    // printf("Packets/sec: %.2f\n", pps);
-
 	return 0;
 }
