@@ -1,6 +1,7 @@
 #include "callback_stream_analyze.h"
 
-#define ANSI_RED	"\x1b[31m"
+#define ANSI_RED	"\x1b[91m"
+#define ANSI_YELLOW	"\x1b[37m"
 #define ANSI_RESET	"\x1b[0m"
 
 void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *packet) {
@@ -42,14 +43,6 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 
 		tcp_pack = (struct tcp_header*)(packet + hdr_size);
 
-		if (*arg == (u_char) 'e') {
-			hdr_size += SIZE_ETHERNET;
-		} else if (*arg == (u_char) 'w') {
-			hdr_size += SIZE_WLAN;
-		}
-
-		tcp_pack = (struct tcp_header*)(packet + hdr_size);
-
 		if (tcp_prev == NULL) {
 			tcp_prev = malloc(sizeof(struct tcp_header));
 		} else {
@@ -59,37 +52,36 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 			prevseq = ntohl(tcp_prev->seq);
 
 			if (sequence < prevseq) {
-			/*	if (good_count != 0) {
+				if (good_count != 0) {
 					start_error_ts = pkthdr->ts;
 					start_error_timeofday = localtime(&(pkthdr->ts.tv_sec));
-				}*/
+				}
 				good_count = 0;
 				bad_count++;
 			} else if (sequence == prevseq) {
-			/*	if (good_count != 0) {
+				if (good_count != 0) {
 					start_error_ts = pkthdr->ts;
 					start_error_timeofday = localtime(&(pkthdr->ts.tv_sec));
-				}*/
+				}
 				good_count = 0;
 				bad_count++;
-
 			} else {
 				good_count++;
 				/* reset bad counter if we've seen enough good packets in a row */
 				if (good_count > THRESHOLD) {
 					/* if there are many errors in a row, that's a bad sign */
 					if (bad_count > THRESHOLD) {
-						printf("Packet number [%d] stream error likely!\tRun of %d errors.\n", count-THRESHOLD, bad_count);
-				/*		end_error_timeofday = localtime(&(pkthdr->ts.tv_sec));
+/*						printf("Packet number [%d] stream error likely!\tRun of %d errors.\n", count-THRESHOLD, bad_count); */
+						end_error_timeofday = localtime(&(pkthdr->ts.tv_sec));
 						strftime(buff_start, 80, "%H:%M:%S", start_error_timeofday);
 						strftime(buff_end, 80, "%H:%M:%S", end_error_timeofday);
 						printf(
-							ANSI_RED "Error" ANSI_RESET " at %s.%.6ld - %s.%.6ld: TCP retransmission\n",
+							ANSI_RED "Error" ANSI_RESET " from %s.%.2ld to %s.%.2ld: " ANSI_YELLOW "TCP retransmission\n" ANSI_RESET,
 							buff_start,
-							(long) start_error_ts.tv_usec,
+							(long) start_error_ts.tv_usec/10000,
 							buff_end,
-							(long) pkthdr->ts.tv_usec
-						);*/
+							(long) pkthdr->ts.tv_usec/10000
+						);
 					}
 					bad_count = 0;
 				}

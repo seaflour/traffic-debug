@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
 		pcap_loop(handle, -1, callback_detect_stream, &link);
 		sprintf(filter, "src net %s", streamip);
 
-		fprintf(stderr, "Filtering on '%s'...\n", filter);
+/*		fprintf(stderr, "Filtering on '%s'...\n", filter); */
 
 		/* create new filter */
 		handle = handle_init(device, filter, &link, errbuf);
@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
 		  return EXIT_FAILURE;
 		  }*/
 
-		fprintf(stderr,"drop rate %d\n",droprate);
+/*		fprintf(stderr,"drop rate %d\n",droprate); */
 		if (droprate != 0) {
 			sprintf(dropstr,"trafficshape drop %d", droprate);
 			system(dropstr);
