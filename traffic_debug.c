@@ -5,9 +5,10 @@ void usage(char *name, int code) {
     fprintf(stderr, "Usage: %s [OPTIONS] [device]\n", name);
     fprintf(stderr, "\nOPTIONS\n\t-h\tprint this text\n");
     fprintf(stderr, "\t-l\tlist available network devices\n");
+    fprintf(stderr, "\t-p\tprecision of error detection, default 3\n");
     fprintf(stderr, "\t-o\ttake file name to save log to\n");
     fprintf(stderr, "\t-i\ttake file name to analyze\n");
-    fprintf(stderr, "\t-d\tspecify device capture direction(in, out, inout)\n");
+    fprintf(stderr, "\t-x\tdrop a percentage of traffic after stream detection\n");
     exit(code);
 }
 
@@ -24,13 +25,10 @@ void print_devices() {
     exit(0);
 }
 
-void cleanup(int i) {
+void cleanup() {
 	u_char c = 'f';
     pcap_close(handle);
 	callback_stream_analyze(&c, NULL, NULL);
-	if (i != 0) {
-		system("trafficshape stop");
-	}
 	printf("\nFinished.\n");
 }
 
@@ -40,21 +38,19 @@ void signal_handler(int signo){
 	} 
 } 
 
-/*extern pcap_t *handle;*/
-
-/*extern char streamip[16];*/
+int precision;
 
 int main(int argc, char **argv) {
     char errbuf[PCAP_ERRBUF_SIZE];
     int opt;
-    char *device; /* network device */
+    char *device = NULL; /* network device */
     u_char link;
     char *ifname = NULL; /* file name for reading in */
     char *ofname = NULL; /* file name for writing out */
     char filter[24];
-    char *capDir; //capture direction
+ 	precision = 3;
 
-	char dropstr[24];
+	char dropstr[128];
 	int droprate = 0;
 
     struct pcap_stat stat; //struct to store capture stats
@@ -65,57 +61,60 @@ int main(int argc, char **argv) {
     }
 
     // Parse command line options
-    while ((opt = getopt(argc, argv, "hlo:i:d:x:")) != -1) {
-        switch (opt) {
-            case 'h':
-                usage(argv[0], 0);
-                break;
-            case 'l':
-                print_devices();
-                break;
-            case 'o':
-                if (optarg == NULL) {
-                    fprintf(stderr, "No filename provided.\n");
-                    usage(argv[0], EXIT_FAILURE);
-                }
-                ofname = optarg;
-                break;
-            case 'i':
-                if (optarg == NULL) {
-                    fprintf(stderr, "No filename provided.\n");
-                    usage(argv[0], EXIT_FAILURE);
-                }
-                ifname = optarg;
-                break;
-            case 'd':
-				if (optarg == NULL) {
-                    fprintf(stderr, "No direction specified.\n");
-                    usage(argv[0], EXIT_FAILURE);
-                }
-                capDir = optarg;
-				break;
-			case 'x':
-				droprate = atoi(optarg);
-                if ((optarg == NULL) || (droprate > 100) || (droprate < 0)) {
-					fprintf(stderr, "No percentage provided.\n");
+	while (optind < argc) {
+		if ((opt = getopt(argc, argv, "hlo:i:x:p:")) != -1) {
+			switch (opt) {
+				case 'h':
+					usage(argv[0], 0);
+					break;
+				case 'l':
+					print_devices();
+					break;
+				case 'p':
+					precision = atoi(optarg);
+					break;
+				case 'o':
+					if (optarg == NULL) {
+						fprintf(stderr, "No filename provided.\n");
+						usage(argv[0], EXIT_FAILURE);
+					}
+					ofname = optarg;
+					break;
+				case 'i':
+					if (optarg == NULL) {
+						fprintf(stderr, "No filename provided.\n");
+						usage(argv[0], EXIT_FAILURE);
+					}
+					ifname = optarg;
+					break;
+				case 'x':
+					droprate = atoi(optarg);
+					if ((optarg == NULL) || (droprate > 100) || (droprate < 0)) {
+						fprintf(stderr, "No percentage provided.\n");
+						usage(argv[0], EXIT_FAILURE);
+					}
+					break;
+				default:
 					usage(argv[0], EXIT_FAILURE);
-				}
-				break;
-			default:
-                usage(argv[0], EXIT_FAILURE);
-        }
-    }
+			}
+		}
+		else {
+			device = argv[optind];
+			optind++;
+		}
+	}
 
 	/* register signal handler */
 	if (signal(SIGINT, signal_handler) == SIG_ERR)
 		fprintf(stderr,"Cannot handle SIGINT\n");
 
-    if (ifname != NULL) {
-        handle = pcap_open_offline(ifname, errbuf);
-        if (handle == NULL) {
-            fprintf(stderr, "%s\n", errbuf);
-            exit(EXIT_FAILURE);
-        }
+	if (ifname != NULL) {
+		printf("Analyzing file %s...\n", ifname);
+		handle = pcap_open_offline(ifname, errbuf);
+		if (handle == NULL) {
+			fprintf(stderr, "%s\n", errbuf);
+			exit(EXIT_FAILURE);
+		}
 		// determine link-layer header type
 		switch (pcap_datalink(handle)) {
 			case DLT_EN10MB:
@@ -133,25 +132,15 @@ int main(int argc, char **argv) {
 		}
 	} else {
 		// The last option is the device name;
-		device = argv[argc - 1];
+		if (device == NULL) {
+			fprintf(stderr, "Missing device name.\n");
+			usage(argv[0],EXIT_FAILURE);
+		}
 
 		handle = handle_init(device, "tcp and not src host localhost", &link, errbuf);
 		if (handle == NULL) {
 			fprintf(stderr, "Error: %s\n.", errbuf);
 			exit(EXIT_FAILURE);
-		}
-
-		//set the capture direction to only those received by device
-		//other options, PCAP_D_OUT, PCAP_D_INOUT
-		if ((strcmp(capDir, "in")) == 0) {
-			pcap_setdirection(handle, PCAP_D_IN);
-		} else if ((strcmp(capDir, "out")) == 0) {
-			pcap_setdirection(handle, PCAP_D_OUT);
-		} else if ((strcmp(capDir, "inout")) == 0) {
-			pcap_setdirection(handle, PCAP_D_INOUT);
-		} else {
-			//printf("Error processing option, setting to default: 'INOUT'\n");
-			pcap_setdirection(handle, PCAP_D_INOUT);
 		}
 
 		printf("Starting capture on device [%s]...\n", device);
@@ -160,7 +149,7 @@ int main(int argc, char **argv) {
 		pcap_loop(handle, -1, callback_detect_stream, &link);
 		sprintf(filter, "src net %s", streamip);
 
-/*		fprintf(stderr, "Filtering on '%s'...\n", filter); */
+		/*		fprintf(stderr, "Filtering on '%s'...\n", filter); */
 
 		/* create new filter */
 		handle = handle_init(device, filter, &link, errbuf);
@@ -174,9 +163,9 @@ int main(int argc, char **argv) {
 		  return EXIT_FAILURE;
 		  }*/
 
-/*		fprintf(stderr,"drop rate %d\n",droprate); */
+		/*		fprintf(stderr,"drop rate %d\n",droprate); */
 		if (droprate != 0) {
-			sprintf(dropstr,"trafficshape drop %d", droprate);
+			sprintf(dropstr,"trafficshape %s drop %d", device, droprate);
 			system(dropstr);
 		}
 
@@ -201,12 +190,17 @@ int main(int argc, char **argv) {
 		//exit(EXIT_FAILURE);
 	}
 	//output capture statistics
-/*	printf("\nReceived Packets: %u\n", stat.ps_recv); */
-/*	printf("Dropped Driver Packets: %u\n", stat.ps_drop); */
-/*	printf("Dropped Interface Packets: %u\n", stat.ps_ifdrop); */
+	/*	printf("\nReceived Packets: %u\n", stat.ps_recv); */
+	/*	printf("Dropped Driver Packets: %u\n", stat.ps_drop); */
+	/*	printf("Dropped Interface Packets: %u\n", stat.ps_ifdrop); */
 
-	printStats();
-	
-	cleanup(droprate);
+	if (ifname == NULL && ofname == NULL)
+		printStats();
+
+	cleanup();
+	if (droprate != 0 && device != NULL) {
+		sprintf(dropstr,"trafficshape %s drop", device);
+		system(dropstr);
+	}
 	return 0;
 }

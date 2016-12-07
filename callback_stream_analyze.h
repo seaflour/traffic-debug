@@ -3,6 +3,7 @@
 #include <string.h>
 #include <netinet/in.h>
 #include <stdlib.h>
+#include "global.h"
 #include "time_analysis.h"
 
 #ifndef CALLBACK_STREAM_ANALYZE_H

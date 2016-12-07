@@ -4,6 +4,7 @@
 #include <pcap.h>
 
 extern char streamip[];
+extern int precision;
 pcap_t *handle;
 
 #endif

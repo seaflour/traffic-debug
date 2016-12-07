@@ -1,12 +1,12 @@
 #include "callback_stream_analyze.h"
 
 #define ANSI_RED	"\x1b[91m"
-#define ANSI_YELLOW	"\x1b[37m"
+#define ANSI_GRAY	"\x1b[37m"
 #define ANSI_RESET	"\x1b[0m"
 
 void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *packet) {
 	/* how many consecutive good/bad packets needed to trigger a reset */
-	const int THRESHOLD = 3;
+	const int THRESHOLD = precision;
 
 
 	static int count = 1;
@@ -26,7 +26,7 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 	if (*arg == (u_char) 'f' && tcp_prev != NULL) {
 		free(tcp_prev);
 		tcp_prev = NULL;
-	} else {
+	} else if (pkthdr != NULL) {
 
 		// This will get the first incoming packet's time and stFlag is then set
 		// so this will not run again.
@@ -76,7 +76,7 @@ void callback_stream_analyze(u_char *arg, const struct pcap_pkthdr *pkthdr, cons
 						strftime(buff_start, 80, "%H:%M:%S", start_error_timeofday);
 						strftime(buff_end, 80, "%H:%M:%S", end_error_timeofday);
 						printf(
-							ANSI_RED "Error" ANSI_RESET " from %s.%.2ld to %s.%.2ld: " ANSI_YELLOW "TCP retransmission\n" ANSI_RESET,
+							ANSI_RED "Error" ANSI_RESET " from %s.%.2ld to %s.%.2ld: " ANSI_GRAY "TCP retransmission\n" ANSI_RESET,
 							buff_start,
 							(long) start_error_ts.tv_usec/10000,
 							buff_end,
