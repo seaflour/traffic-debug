@@ -59,6 +59,10 @@ int main(int argc, char **argv) {
 
     struct pcap_stat stat; //struct to store capture stats
 
+	// lists of timestamps
+	struct stamp *ts_list_head = NULL;
+	struct stamp *user_list_head = NULL;
+
     // Check if sufficient arguments were supplied
     if (argc < 2) {
         usage(argv[0], 1);

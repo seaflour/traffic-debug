@@ -5,5 +5,7 @@
 
 extern char streamip[];
 pcap_t *handle;
+extern struct stamp *ts_list_head;
+extern struct stamp *user_list_head;
 
 #endif

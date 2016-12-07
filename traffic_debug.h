@@ -23,8 +23,10 @@
 #include "callback_stream_log.h"
 #include "usertest.h"
 #include "timestamp_list.h"
+#include "global.h"
 
-pcap_t *handle;
+
+/*pcap_t *handle; */
 char streamip[16];
 
 struct stamp *ts_list_head;

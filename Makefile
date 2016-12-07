@@ -16,7 +16,7 @@ all: $(SOURCES) $(EXECUTABLE)
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $@ $(LDFLAGS)
 
-traffic_debug.o: traffic_debug.c traffic_debug.h callback_stream_log.h callback_stream_analyze.h time_analysis.h callback_detect_stream.h detect_stream.h handle_init.h usertest.h
+traffic_debug.o: traffic_debug.c traffic_debug.h callback_stream_log.h callback_stream_analyze.h time_analysis.h callback_detect_stream.h detect_stream.h handle_init.h usertest.h global.h
 	$(CC) $(CFLAGS) -c $<
 
 usertest.o: usertest.c usertest.h

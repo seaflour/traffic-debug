@@ -1,4 +1,7 @@
 #include "usertest.h"
+#include "timestamp_list.h"
+#include "global.h"
+#include <string.h>
 
 #define ANSI_YELLOW	"\x1b[33m"
 #define ANSI_RESET	"\x1b[0m"
@@ -16,6 +19,15 @@ void *inputTime(void *argp) {
 		if (c == (int)'\n') {
 			gettimeofday(&t, NULL);
 			ts = localtime(&(t.tv_sec));
+
+			struct stamp *timestamp = malloc(sizeof(struct stamp));
+			timestamp->next = ts_list_head;
+			ts_list_head = timestamp;
+			
+			// fill in members of struct
+			timestamp->t = t;
+			memcpy(&(timestamp->t), ts, sizeof(struct tm));
+
 			strftime(buffer, 80, "%H:%M:%S", ts);
 			printf(ANSI_YELLOW "Input at: " ANSI_RESET "%s.%ld\n", buffer, t.tv_usec);
 		}
