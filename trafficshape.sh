@@ -28,7 +28,7 @@ case "$2" in
 
 	stop)
 
-		echo -n "Stopping bandwidth shaping: "
+		echo -n "Stopping packet dropping: "
 		stop
 		echo "done"
 		;;

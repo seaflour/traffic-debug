@@ -5,7 +5,7 @@ void usage(char *name, int code) {
     fprintf(stderr, "Usage: %s [OPTIONS] [device]\n", name);
     fprintf(stderr, "\nOPTIONS\n\t-h\tprint this text\n");
     fprintf(stderr, "\t-l\tlist available network devices\n");
-    fprintf(stderr, "\t-p\tprecision of error detection, default 3\n");
+    fprintf(stderr, "\t-p\tprecision of TCP error detection, default 3\n");
     fprintf(stderr, "\t-o\ttake file name to save log to\n");
     fprintf(stderr, "\t-i\ttake file name to analyze\n");
     fprintf(stderr, "\t-x\tdrop a percentage of traffic after stream detection\n");
@@ -199,7 +199,7 @@ int main(int argc, char **argv) {
 
 	cleanup();
 	if (droprate != 0 && device != NULL) {
-		sprintf(dropstr,"trafficshape %s drop", device);
+		sprintf(dropstr,"trafficshape %s stop", device);
 		system(dropstr);
 	}
 	return 0;

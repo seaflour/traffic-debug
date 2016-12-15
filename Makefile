@@ -1,8 +1,11 @@
 #makefile for traffic_debug
 
 CC = gcc
-CFLAGS = -Wall -g -std=gnu99
+CFLAGS = -Wall -std=gnu99
 LDFLAGS = -lpcap
+
+SRCDIR = src
+OBJDIR = obj
 
 # List of sources
 SOURCES = traffic_debug.c handle_init.c detect_stream.c callback_detect_stream.c callback_stream_analyze.c time_analysis.c callback_stream_log.c
