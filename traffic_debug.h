@@ -22,15 +22,14 @@
 #include "callback_stream_analyze.h"
 #include "callback_stream_log.h"
 #include "usertest.h"
-#include "timestamp_list.h"
+/*#include "timestamp_list.h" */
 #include "global.h"
-
 
 /*pcap_t *handle; */
 char streamip[16];
 
-struct stamp *ts_list_head;
-struct stamp *user_list_head;
+/*struct stamp *ts_list_head; */
+/*struct stamp *user_list_head; */
 
 void usage(char *name, int code);
 void print_devices();

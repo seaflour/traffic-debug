@@ -52,16 +52,18 @@ int main(int argc, char **argv) {
     char *ifname = NULL; /* file name for reading in */
     char *ofname = NULL; /* file name for writing out */
     char filter[24];
-    char *capDir; //capture direction
+/*    char *capDir; //capture direction */
 
 	char dropstr[24];
 	int droprate = 0;
+	int utest = 0;
+	pthread_t tid;
 
     struct pcap_stat stat; //struct to store capture stats
 
 	// lists of timestamps
-	struct stamp *ts_list_head = NULL;
-	struct stamp *user_list_head = NULL;
+/*	struct stamp *ts_list_head = NULL; */
+/*	struct stamp *user_list_head = NULL; */
 
     // Check if sufficient arguments were supplied
     if (argc < 2) {
@@ -69,7 +71,7 @@ int main(int argc, char **argv) {
     }
 
     // Parse command line options
-    while ((opt = getopt(argc, argv, "hlo:i:d:x:")) != -1) {
+    while ((opt = getopt(argc, argv, "hlo:i:x:t")) != -1) {
         switch (opt) {
             case 'h':
                 usage(argv[0], 0);
@@ -91,19 +93,15 @@ int main(int argc, char **argv) {
                 }
                 ifname = optarg;
                 break;
-            case 'd':
-				if (optarg == NULL) {
-                    fprintf(stderr, "No direction specified.\n");
-                    usage(argv[0], EXIT_FAILURE);
-                }
-                capDir = optarg;
-				break;
 			case 'x':
 				droprate = atoi(optarg);
                 if ((optarg == NULL) || (droprate > 100) || (droprate < 0)) {
 					fprintf(stderr, "No percentage provided.\n");
 					usage(argv[0], EXIT_FAILURE);
 				}
+				break;
+			case 't':
+				utest = 1;
 				break;
 			default:
                 usage(argv[0], EXIT_FAILURE);
@@ -145,19 +143,6 @@ int main(int argc, char **argv) {
 			exit(EXIT_FAILURE);
 		}
 
-		//set the capture direction to only those received by device
-		//other options, PCAP_D_OUT, PCAP_D_INOUT
-		if ((strcmp(capDir, "in")) == 0) {
-			pcap_setdirection(handle, PCAP_D_IN);
-		} else if ((strcmp(capDir, "out")) == 0) {
-			pcap_setdirection(handle, PCAP_D_OUT);
-		} else if ((strcmp(capDir, "inout")) == 0) {
-			pcap_setdirection(handle, PCAP_D_INOUT);
-		} else {
-			//printf("Error processing option, setting to default: 'INOUT'\n");
-			pcap_setdirection(handle, PCAP_D_INOUT);
-		}
-
 		printf("Starting capture on device [%s]...\n", device);
 
 		strcpy(streamip, "");
@@ -169,9 +154,10 @@ int main(int argc, char **argv) {
 		/* create new filter */
 		handle = handle_init(device, filter, &link, errbuf);
 
+		// Error in init, or user quit during stream detect
 		if (handle == NULL) {
-			fprintf(stderr, "Error: %s\n.", errbuf);
-			exit(EXIT_FAILURE);
+			printf("\n");
+			exit(0);
 		}
 		/*if (pcap_setfilter(handle, &fp) == -1) {
 		  fprintf(stderr, "\npcap_setfilter() failed!\n");
@@ -196,6 +182,11 @@ int main(int argc, char **argv) {
 			exit(EXIT_FAILURE);
 		}
 	} else {
+		// start thread with manual test, if option is set
+		if (utest != 0) {
+			pthread_create(&tid, NULL, inputTime, NULL);
+		}
+
 		pcap_loop(handle, -1, callback_stream_analyze, &link);
 	}
 	//set capture to statistics mode and fill in stat struct
@@ -208,6 +199,11 @@ int main(int argc, char **argv) {
 /*	printf("\nReceived Packets: %u\n", stat.ps_recv); */
 /*	printf("Dropped Driver Packets: %u\n", stat.ps_drop); */
 /*	printf("Dropped Interface Packets: %u\n", stat.ps_ifdrop); */
+
+	// Wait for user to finish manual test
+	if (utest != 0) {
+		pthread_join(tid, NULL);
+	}
 
 	printStats();
 	
