@@ -9,6 +9,7 @@ void usage(char *name, int code) {
     fprintf(stderr, "\t-o\ttake file name to save log to\n");
     fprintf(stderr, "\t-i\ttake file name to analyze\n");
     fprintf(stderr, "\t-x\tdrop a percentage of traffic after stream detection\n");
+    fprintf(stderr, "\t-t\tmanually indicate errors to compare with error reports\n");
     exit(code);
 }
 
