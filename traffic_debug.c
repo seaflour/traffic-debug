@@ -49,11 +49,18 @@ int main(int argc, char **argv) {
     char *ofname = NULL; /* file name for writing out */
     char filter[24];
  	precision = 3;
+/*    char *capDir; //capture direction */
 
 	char dropstr[128];
 	int droprate = 0;
+	int utest = 0;
+	pthread_t tid;
 
     struct pcap_stat stat; //struct to store capture stats
+
+	// lists of timestamps
+/*	struct stamp *ts_list_head = NULL; */
+/*	struct stamp *user_list_head = NULL; */
 
     // Check if sufficient arguments were supplied
     if (argc < 2) {
@@ -62,7 +69,7 @@ int main(int argc, char **argv) {
 
     // Parse command line options
 	while (optind < argc) {
-		if ((opt = getopt(argc, argv, "hlo:i:x:p:")) != -1) {
+		if ((opt = getopt(argc, argv, "hlo:i:x:p:t")) != -1) {
 			switch (opt) {
 				case 'h':
 					usage(argv[0], 0);
@@ -93,6 +100,9 @@ int main(int argc, char **argv) {
 						fprintf(stderr, "No percentage provided.\n");
 						usage(argv[0], EXIT_FAILURE);
 					}
+					break;
+				case 't':
+					utest = 1;
 					break;
 				default:
 					usage(argv[0], EXIT_FAILURE);
@@ -154,9 +164,10 @@ int main(int argc, char **argv) {
 		/* create new filter */
 		handle = handle_init(device, filter, &link, errbuf);
 
+		// Error in init, or user quit during stream detect
 		if (handle == NULL) {
-			fprintf(stderr, "Error: %s\n.", errbuf);
-			exit(EXIT_FAILURE);
+			printf("\n");
+			exit(0);
 		}
 		/*if (pcap_setfilter(handle, &fp) == -1) {
 		  fprintf(stderr, "\npcap_setfilter() failed!\n");
@@ -181,6 +192,11 @@ int main(int argc, char **argv) {
 			exit(EXIT_FAILURE);
 		}
 	} else {
+		// start thread with manual test, if option is set
+		if (utest != 0) {
+			pthread_create(&tid, NULL, inputTime, NULL);
+		}
+
 		pcap_loop(handle, -1, callback_stream_analyze, &link);
 	}
 	//set capture to statistics mode and fill in stat struct
@@ -193,6 +209,11 @@ int main(int argc, char **argv) {
 	/*	printf("\nReceived Packets: %u\n", stat.ps_recv); */
 	/*	printf("Dropped Driver Packets: %u\n", stat.ps_drop); */
 	/*	printf("Dropped Interface Packets: %u\n", stat.ps_ifdrop); */
+
+	// Wait for user to finish manual test
+	if (utest != 0) {
+		pthread_join(tid, NULL);
+	}
 
 	if (ifname == NULL && ofname == NULL)
 		printStats();

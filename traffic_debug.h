@@ -15,11 +15,14 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <signal.h>
+#include <pthread.h>
 #include "detect_stream.h"
 #include "handle_init.h"
 #include "callback_detect_stream.h"
 #include "callback_stream_analyze.h"
 #include "callback_stream_log.h"
+#include "usertest.h"
+#include "global.h"
 
 pcap_t *handle;
 char streamip[16];
